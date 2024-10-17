@@ -1,0 +1,511 @@
+
+//Called when application is started.
+function OnStart()
+{
+	//Various globals
+	roll = false;
+	difficultyLvl = "Normal";
+	//How long shall dice roll
+	rollDuration = 100;
+	rollDurationCurrent = 0;
+	angle = 0;
+	debug = true;
+	//Image paths
+	d6 = "Img/d6BlackWhite.png";
+	skull = "Img/HQSkull.png";
+	shield = "Img/HQShield.png";
+	eShield ="Img/HQEnemyShield.png";
+	d20 = "Img/D20.png";
+	//Dice pos
+	var x = 0.0;
+	var y = 0.05;
+	//var yOff = 0.0;
+	//Dice collector object
+	diceObj = {};
+
+	//Create a layout with objects freely placed
+	lay = app.CreateLayout( "Absolute" );
+	app.SetOrientation( "Landscape" );
+	lay.SetBackground("Img/heroBack.jpg");
+	
+	//Fill diceObj
+	diceObj.D20 = {};
+	diceObj.D20.img = imgFactory(d20, 0.05, x+0.052, y+0.26, 0.15, 0.16);
+    diceObj.D20.chk = app.CreateCheckBox( "-" );
+    diceObj.D20.chk.SetPosition(0.0,y+0.06+0.21,0.06,0.06);
+    diceObj.D20.chk.SetText("-");
+    diceObj.D20.value = 0;
+    diceObj.D20.roll = false;
+    diceObj.D20.name = "D20";
+	//DICE: 01
+	diceObj.d01 = {};
+	diceObj.d01.img = imgFactory(d6, 0.05, x+0.05, y+0.4, 0.15, 0.16);
+	diceObj.d01.skull = imgFactory(skull, 0.04, x+0.055, y+0.40, 0.15, 0.16);
+	diceObj.d01.skull.SetVisibility("Hide");
+	diceObj.d01.shield = imgFactory(shield, 0.04, x+0.055, y+0.41, 0.15, 0.16);	
+	diceObj.d01.shield.SetVisibility("Hide");
+	diceObj.d01.eShield = imgFactory(eShield, 0.04, x+0.055, y+0.41, 0.15, 0.16);	
+	diceObj.d01.eShield.SetVisibility("Hide");	
+    diceObj.d01.chk = app.CreateCheckBox( "-" );
+    diceObj.d01.chk.SetPosition(0.0,y+0.41,0.06,0.06);
+    diceObj.d01.value = 0;
+    diceObj.d01.roll = false;
+    diceObj.d01.name = "d01";
+	//...02
+	diceObj.d02 = {};
+	diceObj.d02.img = imgFactory(d6, 0.05, x+0.05+0.15, y+0.4, 0.15, 0.16);
+	diceObj.d02.skull = imgFactory(skull, 0.04, x+0.055+0.15, y+0.40, 0.15, 0.16);
+	diceObj.d02.skull.SetVisibility("Hide");
+	diceObj.d02.shield = imgFactory(shield, 0.04, x+0.055+0.15, y+0.41, 0.15, 0.16);	
+	diceObj.d02.shield.SetVisibility("Hide");
+	diceObj.d02.eShield = imgFactory(eShield, 0.04, x+0.055+0.15, y+0.41, 0.15, 0.16);	
+	diceObj.d02.eShield.SetVisibility("Hide");	
+    diceObj.d02.chk = app.CreateCheckBox( "-" );
+    diceObj.d02.chk.SetPosition(0.0+0.15,y+0.41,0.06,0.06);
+    diceObj.d02.value = 0;
+    diceObj.d02.roll = false;
+    diceObj.d02.name = "d02";	
+	//...03
+	diceObj.d03 = {};
+	diceObj.d03.img = imgFactory(d6, 0.05, x+0.05+0.3, y+0.4, 0.15, 0.16);
+	diceObj.d03.skull = imgFactory(skull, 0.04, x+0.055+0.3, y+0.41, 0.15, 0.16);
+	diceObj.d03.skull.SetVisibility("Hide");
+	diceObj.d03.shield = imgFactory(shield, 0.04, x+0.055+0.3, y+0.41, 0.15, 0.16);	
+	diceObj.d03.shield.SetVisibility("Hide");
+	diceObj.d03.eShield = imgFactory(eShield, 0.04, x+0.055+0.3, y+0.41, 0.15, 0.16);	
+	diceObj.d03.eShield.SetVisibility("Hide");	
+    diceObj.d03.chk = app.CreateCheckBox( "-" );
+    diceObj.d03.chk.SetPosition(0.0+0.3,y+0.41,0.06,0.06);
+    diceObj.d03.value = 0;
+    diceObj.d03.roll = false;
+    diceObj.d03.name = "d03";
+ 	//...04
+	diceObj.d04 = {};
+	diceObj.d04.img = imgFactory(d6, 0.05, x+0.05+0.45, y+0.4, 0.15, 0.16);
+	diceObj.d04.skull = imgFactory(skull, 0.04, x+0.055+0.45, y+0.40, 0.15, 0.16);
+	diceObj.d04.skull.SetVisibility("Hide");
+	diceObj.d04.shield = imgFactory(shield, 0.04, x+0.055+0.45, y+0.41, 0.15, 0.16);	
+	diceObj.d04.shield.SetVisibility("Hide");
+	diceObj.d04.eShield = imgFactory(eShield, 0.04, x+0.055+0.45, y+0.41, 0.15, 0.16);	
+	diceObj.d04.eShield.SetVisibility("Hide");	
+    diceObj.d04.chk = app.CreateCheckBox( "-" );
+    diceObj.d04.chk.SetPosition(0.0+0.45,y+0.41,0.06,0.06);
+    diceObj.d04.value = 0;
+    diceObj.d04.roll = false;
+    diceObj.d04.name = "d04";   
+ 	//...05
+	diceObj.d05 = {};
+	diceObj.d05.img = imgFactory(d6, 0.05, x+0.05+0.6, y+0.4, 0.15, 0.16);
+	diceObj.d05.skull = imgFactory(skull, 0.04, x+0.055+0.6, y+0.40, 0.15, 0.16);
+	diceObj.d05.skull.SetVisibility("Hide");
+	diceObj.d05.shield = imgFactory(shield, 0.04, x+0.055+0.6, y+0.41, 0.15, 0.16);	
+	diceObj.d05.shield.SetVisibility("Hide");
+	diceObj.d05.eShield = imgFactory(eShield, 0.04, x+0.055+0.6, y+0.41, 0.15, 0.16);	
+	diceObj.d05.eShield.SetVisibility("Hide");	
+    diceObj.d05.chk = app.CreateCheckBox( "-" );
+    diceObj.d05.chk.SetPosition(0.0+0.6,y+0.41,0.06,0.06);
+    diceObj.d05.value = 0;
+    diceObj.d05.roll = false;
+    diceObj.d05.name = "d05"; 
+ 	//...06
+	diceObj.d06 = {};
+	diceObj.d06.img = imgFactory(d6, 0.05, x+0.05+0.75, y+0.4, 0.15, 0.16);
+	diceObj.d06.skull = imgFactory(skull, 0.04, x+0.055+0.75, y+0.40, 0.15, 0.16);
+	diceObj.d06.skull.SetVisibility("Hide");
+	diceObj.d06.shield = imgFactory(shield, 0.04, x+0.055+0.75, y+0.41, 0.15, 0.16);	
+	diceObj.d06.shield.SetVisibility("Hide");
+	diceObj.d06.eShield = imgFactory(eShield, 0.04, x+0.055+0.75, y+0.41, 0.15, 0.16);	
+	diceObj.d06.eShield.SetVisibility("Hide");	
+    diceObj.d06.chk = app.CreateCheckBox( "-" );
+    diceObj.d06.chk.SetPosition(0.0+0.75,y+0.41,0.06,0.06);
+    diceObj.d06.value = 0;
+    diceObj.d06.roll = false;
+    diceObj.d06.name = "d06"; 
+ 	//...07 - NEW ROW
+	diceObj.d07 = {};
+	diceObj.d07.img = imgFactory(d6, 0.05, x+0.05, y+0.6, 0.15, 0.16);
+	diceObj.d07.skull = imgFactory(skull, 0.04, x+0.055, y+0.60, 0.15, 0.16);
+	diceObj.d07.skull.SetVisibility("Hide");
+	diceObj.d07.shield = imgFactory(shield, 0.04, x+0.055, y+0.61, 0.15, 0.16);	
+	diceObj.d07.shield.SetVisibility("Hide");
+	diceObj.d07.eShield = imgFactory(eShield, 0.04, x+0.055, y+0.61, 0.15, 0.16);	
+	diceObj.d07.eShield.SetVisibility("Hide");	
+    diceObj.d07.chk = app.CreateCheckBox( "-" );
+    diceObj.d07.chk.SetPosition(0.0,y+0.61,0.06,0.06);
+    diceObj.d07.value = 0;
+    diceObj.d07.roll = false;
+    diceObj.d07.name = "d07";
+	//...08
+	diceObj.d08 = {};
+	diceObj.d08.img = imgFactory(d6, 0.05, x+0.05+0.15, y+0.6, 0.15, 0.16);
+	diceObj.d08.skull = imgFactory(skull, 0.04, x+0.055+0.15, y+0.60, 0.15, 0.16);
+	diceObj.d08.skull.SetVisibility("Hide");
+	diceObj.d08.shield = imgFactory(shield, 0.04, x+0.055+0.15, y+0.61, 0.15, 0.16);	
+	diceObj.d08.shield.SetVisibility("Hide");
+	diceObj.d08.eShield = imgFactory(eShield, 0.04, x+0.055+0.15, y+0.61, 0.15, 0.16);	
+	diceObj.d08.eShield.SetVisibility("Hide");	
+    diceObj.d08.chk = app.CreateCheckBox( "-" );
+    diceObj.d08.chk.SetPosition(0.0+0.15,y+0.61,0.06,0.06);
+    diceObj.d08.value = 0;
+    diceObj.d08.roll = false;
+    diceObj.d08.name = "d02";	
+	//...09
+	diceObj.d09 = {};
+	diceObj.d09.img = imgFactory(d6, 0.05, x+0.05+0.3, y+0.6, 0.15, 0.16);
+	diceObj.d09.skull = imgFactory(skull, 0.04, x+0.055+0.3, y+0.60, 0.15, 0.16);
+	diceObj.d09.skull.SetVisibility("Hide");
+	diceObj.d09.shield = imgFactory(shield, 0.04, x+0.055+0.3, y+0.61, 0.15, 0.16);	
+	diceObj.d09.shield.SetVisibility("Hide");
+	diceObj.d09.eShield = imgFactory(eShield, 0.04, x+0.055+0.3, y+0.61, 0.15, 0.16);	
+	diceObj.d09.eShield.SetVisibility("Hide");	
+    diceObj.d09.chk = app.CreateCheckBox( "-" );
+    diceObj.d09.chk.SetPosition(0.0+0.3,y+0.61,0.06,0.06);
+    diceObj.d09.value = 0;
+    diceObj.d09.roll = false;
+    diceObj.d09.name = "d09";
+ 	//...10
+	diceObj.d10 = {};
+	diceObj.d10.img = imgFactory(d6, 0.05, x+0.05+0.45, y+0.6, 0.15, 0.16);
+	diceObj.d10.skull = imgFactory(skull, 0.04, x+0.055+0.45, y+0.60, 0.15, 0.16);
+	diceObj.d10.skull.SetVisibility("Hide");
+	diceObj.d10.shield = imgFactory(shield, 0.04, x+0.055+0.45, y+0.61, 0.15, 0.16);	
+	diceObj.d10.shield.SetVisibility("Hide");
+	diceObj.d10.eShield = imgFactory(eShield, 0.04, x+0.055+0.45, y+0.61, 0.15, 0.16);	
+	diceObj.d10.eShield.SetVisibility("Hide");	
+    diceObj.d10.chk = app.CreateCheckBox( "-" );
+    diceObj.d10.chk.SetPosition(0.0+0.45,y+0.61,0.06,0.06);
+    diceObj.d10.value = 0;
+    diceObj.d10.roll = false;
+    diceObj.d10.name = "d10";   
+ 	//...11
+	diceObj.d11 = {};
+	diceObj.d11.img = imgFactory(d6, 0.05, x+0.05+0.6, y+0.6, 0.15, 0.16);
+	diceObj.d11.skull = imgFactory(skull, 0.04, x+0.055+0.6, y+0.60, 0.15, 0.16);
+	diceObj.d11.skull.SetVisibility("Hide");
+	diceObj.d11.shield = imgFactory(shield, 0.04, x+0.055+0.6, y+0.61, 0.15, 0.16);	
+	diceObj.d11.shield.SetVisibility("Hide");
+	diceObj.d11.eShield = imgFactory(eShield, 0.04, x+0.055+0.6, y+0.61, 0.15, 0.16);	
+	diceObj.d11.eShield.SetVisibility("Hide");	
+    diceObj.d11.chk = app.CreateCheckBox( "-" );
+    diceObj.d11.chk.SetPosition(0.0+0.6,y+0.61,0.06,0.06);
+    diceObj.d11.value = 0;
+    diceObj.d11.roll = false;
+    diceObj.d11.name = "d05"; 
+ 	//...12
+	diceObj.d12 = {};
+	diceObj.d12.img = imgFactory(d6, 0.05, x+0.05+0.75, y+0.6, 0.15, 0.16);
+	diceObj.d12.skull = imgFactory(skull, 0.04, x+0.055+0.75, y+0.60, 0.15, 0.16);
+	diceObj.d12.skull.SetVisibility("Hide");
+	diceObj.d12.shield = imgFactory(shield, 0.04, x+0.055+0.75, y+0.61, 0.15, 0.16);	
+	diceObj.d12.shield.SetVisibility("Hide");
+	diceObj.d12.eShield = imgFactory(eShield, 0.04, x+0.055+0.75, y+0.61, 0.15, 0.16);	
+	diceObj.d12.eShield.SetVisibility("Hide");	
+    diceObj.d12.chk = app.CreateCheckBox( "-" );
+    diceObj.d12.chk.SetPosition(0.0+0.75,y+0.61,0.06,0.06);
+    diceObj.d12.value = 0;
+    diceObj.d12.roll = false;
+    diceObj.d12.name = "d12"; 
+    
+    //Place dice on screen
+	for(var key in diceObj){
+	    lay.AddChild(diceObj[key].img);
+	    lay.AddChild(diceObj[key].skull);
+	    lay.AddChild(diceObj[key].shield);
+	    lay.AddChild(diceObj[key].eShield);
+	    lay.AddChild(diceObj[key].chk);
+	}
+	
+	//TXT: Debug
+	txtDbg = app.CreateText( "",0.6,0.1,"Left" );
+	txtDbg.SetPosition(0.0,0.9,1,0.1);
+	txtDbg.SetTextSize( 12 );
+	txtDbg.SetTextColor( "#aa0000" );
+	lay.AddChild( txtDbg );
+	
+	//BTN: Changing battle mode
+	btnAttackMode = app.CreateButton( "Start Round" );
+	btnAttackMode.SetPosition(x+0.03,0.05,0.1,0.1);
+    btnAttackMode.SetOnTouch( battleMode );
+    lay.AddChild( btnAttackMode );
+    
+    //CHK: Difficulty
+    chkNormal = app.CreateCheckBox( "Mode: Normal" );
+    chkNormal.SetPosition(x+0.0,y+0.1,0.2,0.1);
+    chkNormal.SetTextColor( "#00AAFF" );
+    chkNormal.SetOnTouch( checkNormal );
+    chkNormal.SetChecked(true);
+    lay.AddChild( chkNormal );
+    chkHard = app.CreateCheckBox( "Mode: Hard" );
+    chkHard.SetPosition(x+0.0,y+0.15,0.2,0.1);
+    chkHard.SetTextColor( "#FF0000" );
+    chkHard.SetOnTouch( checkHard );
+    lay.AddChild( chkHard );
+    
+    //TXT: Trap
+    txtTrap = app.CreateText("Trap: --- ",0.6,0.1,"Left,Bold" );
+	txtTrap.SetPosition(x+0.18,y+0.005,0.7,0.06);
+	txtTrap.SetTextSize( 16 );
+	txtTrap.SetTextColor( "#eb5c26" );
+	//txtTrap.SetBackColor( "#000000" );
+	lay.AddChild( txtTrap );
+	
+	//TXT: Ambush
+	txtAmb = app.CreateText("Ambush: --- ",0.6,0.1,"Left,Bold" );
+	txtAmb.SetPosition(x+0.18,y+0.005+0.08,0.7,0.06);
+	txtAmb.SetTextSize( 16 );
+	txtAmb.SetTextColor( "#eb5c26" );
+	//txtAmb.SetBackColor( "#000000" );
+	lay.AddChild( txtAmb );
+	
+	//TXT: Room
+	txtRoom = app.CreateText("Room: --- ",0.6,0.1,"Left,Bold" );
+	txtRoom.SetPosition(x+0.18,y+0.005+0.16,0.7,0.06);
+	txtRoom.SetTextSize( 16 );
+	txtRoom.SetTextColor( "#eb5c26" );
+	//txtRoom.SetBackColor( "#000000" );
+	lay.AddChild( txtRoom );
+
+	//BTN: Roll D20
+	btnRollD20 = app.CreateButton( "Roll D20" );
+	btnRollD20.SetPosition(x+0.175,0.3,0.1,0.1);
+    btnRollD20.SetOnTouch( rollD20 );
+    lay.AddChild( btnRollD20 );
+
+	//BTN: Roll Dice
+	btnRollAll = app.CreateButton( "Roll Dice" );
+	btnRollAll.SetPosition(x+0.75,0.8,0.1,0.1);
+    btnRollAll.SetOnTouch( rollAll );
+    lay.AddChild( btnRollAll );	
+	
+	//Render view port
+    setInterval( "render()", 5 );
+	
+	//Add layout to app.	
+	app.AddLayout( lay );
+}
+
+//LOOP: Image rotation
+//- Gameloop to continously check and draw images, roll animation and dice roll
+function render( ev )
+{
+    //Todo: Roll all checked images
+    
+    if(roll && rollDurationCurrent > 0){
+        //Each dice is rolled separately as all rotating decreases performance
+        for(var key in diceObj){
+            if(diceObj[key].roll){
+                //Rotate animation for each dice
+                while(diceObj[key].roll){
+                    diceObj[key].img.Rotate(angle);
+                    if(rollDurationCurrent <=0){
+                        diceObj[key].roll = false;
+                        rollDurationCurrent = rollDuration;
+                        //Is D20
+                        if(diceObj[key].name == "D20"){
+                            diceObj[key].chk.SetText(diceObj[key].value);
+                            break;
+                        }else{
+                            //Check skull 1-3, shield 4+5, blank 6
+                            if(diceObj[key].value < 4){
+                                diceObj[key].skull.SetVisibility("Show");
+                            }else if(diceObj[key].value < 6){
+                                diceObj[key].shield.SetVisibility("Show");
+                            }else if(diceObj[key].value == 6){
+                                dbgOut("Evil Shield called");
+                                diceObj[key].eShield.SetVisibility("Show");
+                            }
+                        }
+                    }else{
+                        rollDurationCurrent--;
+	                    angle += 3;
+	                    continue;
+                    }
+                }
+            }
+        }
+	    
+	    //rollDuration--;
+	    //Reset roll action
+	    //if(rollDurationCurrent <= 0){
+	        roll = false;
+	    //}
+    }
+}
+
+
+//CALLBACK: Attack mode function
+//- Simulate 6 eyes dice to roll for a command
+//- Target in sight changes the odds to be more aggressive
+function battleMode()
+{
+  var trap = ["Trap:                ... chaos calls", 
+  "Trap: Nothing happens...", 
+  "Trap: A TRAP triggers to stop you adventurer!"];
+  var ambush = ["Ambush:                ... evil thinks", 
+  "Ambush: No enemies ambush...", 
+  "Ambush: A GOBLIN sneaks in from behind", 
+  "Ambush: An ORK is storming the front!", 
+  "Ambush: A ZOMBIE freezes your blood in the front!"];
+  var room = ["Room:                ... rooms move", 
+  "Room: Nothing happens...", 
+  "Room: SUPPORT next room + 1 of weakest unit", 
+  "Room: FLEEING next room -1 of weakest unit", 
+  "Room: STRONG next room +1 strongest unit"]; 
+  
+  var roll1 = getRandomIntInclusive(1,20);
+  var roll2 = getRandomIntInclusive(1,20);
+  var roll3 = getRandomIntInclusive(1,20);
+  
+  txtTrap.SetText(trap[0]);
+  txtAmb.SetText(ambush[0]);
+  txtRoom.SetText(room[0]);
+  app.Wait(1);
+  
+  if(difficultyLvl == "Normal"){
+    dbgOut("Checking round conditions for NORMAL mode, rolls = " + roll1 + "." + roll2 + "." + roll3);
+    
+    //Roll for trap
+    if(roll1 == 1){
+        txtTrap.SetText(trap[2]);
+    }else{
+        txtTrap.SetText(trap[1]);
+    }  
+    app.Wait(1);  
+    
+    //Roll for ambush
+    if(roll2 == 1){
+        txtAmb.SetText(ambush[2]);
+    }else if(roll2 == 2){
+        txtAmb.SetText(ambush[3]);
+    }else{
+        txtAmb.SetText(ambush[1]);
+    }
+    app.Wait(1); 
+    
+    //Roll for room
+    if(roll3 == 1){
+        txtRoom.SetText(room[2]);
+    }else if(roll3 == 10 || roll3 == 11){
+        txtRoom.SetText(room[3]);
+    }else{
+        txtRoom.SetText(room[1]);
+    }
+    
+    
+  }
+  if(difficultyLvl == "Hard"){
+    dbgOut("Checking round conditions for HARD mode, rolls = " + roll1 + "." + roll2 + "." + roll3);
+   
+    //Roll for trap
+    if(roll1 < 3){
+        txtTrap.SetText(trap[2]);
+    }else{
+        txtTrap.SetText(trap[1]);
+    }  
+    app.Wait(1);  
+    
+    //Roll for ambush
+    if(roll2 < 2){
+        txtAmb.SetText(ambush[2]);
+    }else if(roll2 < 4 ){
+        txtAmb.SetText(ambush[3]);
+    }else if(roll2 < 5){
+        txtAmb.SetText(ambush[4]);
+    }else{
+        txtAmb.SetText(ambush[1]);
+    }
+    app.Wait(1); 
+    
+    //Roll for room
+    if(roll3 < 3){
+        txtRoom.SetText(room[4]);
+    }else if(roll3 == 10){
+        txtRoom.SetText(room[3]);
+    }else{
+        txtRoom.SetText(room[1]);
+    } 
+  }  
+
+}
+
+//CALLBACK: Roll D20
+function rollD20(){
+    diceObj.D20.chk.SetText("-");
+    diceObj.D20.roll = true;
+    diceObj.D20.value = getRandomIntInclusive(1,20);
+    
+    //Globals for render loop to animate rotation
+    roll = true;
+    rollDurationCurrent = rollDuration;
+    
+    dbgOut("roll = " + diceObj.D20.roll + " and value = " + diceObj.D20.value);
+}
+
+//CALLBACK: Rolls the dice
+//- Setting globals to positive, which are checked in render()
+function rollAll(){
+    //Reset all dice
+    for(var key in diceObj){
+        diceObj[key].chk.SetText("-");  
+        if(diceObj[key].skull){
+            diceObj[key].skull.SetVisibility("Hide");
+            diceObj[key].shield.SetVisibility("Hide");
+            diceObj[key].eShield.SetVisibility("Hide");
+        }
+    }
+    
+    //Which dice checked
+    for(var key in diceObj){
+        if(diceObj[key].chk.GetChecked()){
+            diceObj[key].roll = true;
+            diceObj[key].value = getRandomIntInclusive(1,6);
+        }    
+    }
+    
+    //Globals for render loop to animate rotation
+    roll = true;
+    rollDurationCurrent = rollDuration;
+    
+    dbgOut("...rollAll called");
+}
+
+//CALLBACK: Check difficulty mode
+function checkNormal(){
+    chkHard.SetChecked(false);
+    difficultyLvl = "Normal";
+}
+//CALLBACK: Check difficulty mode
+function checkHard(){
+    chkNormal.SetChecked(false);
+    difficultyLvl = "Hard";
+}
+
+
+//TOOL: Throw d6 dice
+function throwD6(){
+    var val = getRandomIntInclusive(1,6);
+    return val;
+}
+
+//TOOL: Randomiser min and max included
+function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min +1)) + min; 
+}
+
+//TOOL: Image factory
+function imgFactory(file, size, posX, posY, width, height){
+    var img;
+    img = app.CreateImage( file, size, -1 );
+    img.SetPosition(posX, posY, width, height);
+    
+    return img;
+}
+
+//TOOL: Debug output
+function dbgOut(str){
+    if(debug){
+        txtDbg.SetText(str);
+    }
+}

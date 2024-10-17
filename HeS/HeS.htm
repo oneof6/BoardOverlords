@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+    <script>
+
+    function cardsPlus(){
+        var val = document.getElementById('cardsInPlay').value;
+        val++;
+        document.getElementById('cardsInPlay').value = ""+val+"";
+    }
+
+    function cardsMinus(){
+        var val = document.getElementById('cardsInPlay').value;
+        val--;
+        document.getElementById('cardsInPlay').value = ""+val+"";
+    }
+    
+    function rollsPlus(){
+        var val = document.getElementById('numberRolls').value;
+        val++;
+        document.getElementById('numberRolls').value = ""+val+"";
+    }
+
+    function rollsMinus(){
+        var val = document.getElementById('numberRolls').value;
+        val--;
+        document.getElementById('numberRolls').value = ""+val+"";
+    }
+
+    function rollDice(sides){
+        var rnd = Math.floor(Math.random() * sides);
+        return rnd+1;
+    }
+
+    function cardOrder(){
+        var inPlay =  document.getElementById('cardsInPlay').value;
+        var order = '';
+
+        order = order + rollDice(inPlay) + ', ';
+        order = order + rollDice(inPlay) + ', ';
+        order = order + rollDice(inPlay)
+
+        document.getElementById('order').innerHTML = '<b>' + order + '</b>';
+    }
+
+    function rollD20(){
+        var d20 = rollDice(20);
+        document.getElementById('d20Field').innerHTML = '<img src="assets/d20.png"><b> -> ' + (d20) + '</b>';
+    }
+
+    //TODO - Battle Mode
+    function battleMode(){
+        //Get a random number, we want 5 modes
+        var mode = rollDice(5);
+        var modeDesc = '';
+        switch(mode){
+            case 1: modeDesc = '<b>Meander</b><br>';
+            break;
+            case 2: modeDesc = '<b>Support</b><br>';
+            break;
+            case 3: modeDesc = '<b>Patrol</b><br>';
+            break;
+            case 4: modeDesc = '<b>Sweep</b><br>';
+            break;
+            case 5: modeDesc = '<b>Guard</b><br>';
+            break; 
+            default: modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
+            '#If ENGAGED: Attack';
+        }
+        document.getElementById("enemyMode").innerHTML = modeDesc;
+    }
+
+     //Sleep function to wait some time e.g. for polling, time in millisecs
+    function sleepFor( sleepDuration ){
+        var now = new Date().getTime();
+        while(new Date().getTime() < now + sleepDuration){ / do nothing / }
+    }
+
+    function execRolls(element){
+        numOfRolls = document.getElementById("numberRolls").value;
+        cleanDivs();
+        renderRolls(numOfRolls);
+    }   
+     
+    function renderRolls(numOfRolls){
+        //Set null if no number
+        if(!numOfRolls){
+            numOfRolls = 0;
+        }
+
+        //Limit to max of div spots, which is 12
+        if(numOfRolls > 12){
+            numOfRolls = 12;
+        }
+
+        //cleanDivs();
+        for(var i=0; i<numOfRolls; i++){
+            var res = rollDice(6);
+            
+            //TODO - Sleep between runs, ot working without canvas 2d
+
+            switch(res){
+                case 1: document.getElementById('die' + i).innerHTML = '<img src="assets/shield.png">';
+                break;
+                case 2: document.getElementById('die' + i).innerHTML = '<img src="assets/shield.png">'; 
+                break;
+                case 3: document.getElementById('die' + i).innerHTML = '<img src="assets/skull.png">';
+                break;
+                case 4: document.getElementById('die' + i).innerHTML = '<img src="assets/skull.png">';
+                break;
+                case 5: document.getElementById('die' + i).innerHTML = '<img src="assets/skull.png">';
+                break;
+                case 6: document.getElementById('die' + i).innerHTML = '<img src="assets/none.png">';
+                break;
+            }
+        }
+    }
+
+    function cleanDivs(numOfRolls) {
+        //Clean divs
+        for(var i=0; i<12; i++){
+            var el = document.getElementById('die' + i);
+            el.innerHTML = '';
+        }
+    }
+
+    
+    </script>
+
+
+    <meta charset="UTF-8">
+    <title>HS Overlord</title>
+    <style>
+        body{
+            background: black;
+            background-image: url('assets/scapeBack.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed; 
+            background-size: 100% 100%;
+        }
+        canvas {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+            display: block;
+        }
+        div {
+            color: lightskyblue;
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+            display: block;
+        }
+        .centerTbl {
+            margin-left: auto;
+            margin-right: auto;   
+        }
+    </style>
+</head>
+
+<body>
+    <br>
+    <div id="enemyMode"></div>
+    <table>
+        <tr>
+            <td><input type="button" id="battleMode" value="battle mode" onClick="battleMode()"></td>    
+        </tr>
+        <tr>
+            <td><input type="button" id="d20" value="roll d20" onClick="rollD20()"></td>
+            <td><div id="d20Field"><img src="assets/d20.png"></div></td>
+        </tr>
+        <tr>
+            <td>
+                <input type="number" id="cardsInPlay" maxlength="2" size="2"><br>
+                <input type="button" id="cardsInc" value=" + " onClick="cardsPlus()"><input type="button" id="cardsDec" value=" - " onClick="cardsMinus()">
+            </td>
+            <td><input type="button" id="cardOrder" value="card order" onClick="cardOrder()"><div id="order"></div></td>
+        </tr>
+        <tr>
+            <td><input type="number" id="numberRolls" maxlength="2" size="2"><br>
+                <input type="button" id="rollsInc" value=" + " onClick="rollsPlus()"><input type="button" id="rollsDec" value=" - " onClick="rollsMinus()">
+            </td>
+            <td><input type="button" id="roll" value="roll" onClick="execRolls()"></td>
+        </tr>
+    </table>
+
+    <table class="centerTbl">
+        <tr>
+            <td><div id="die0"></div></td> <td><div id="die1"></div></td> <td><div id="die2"></div></td>
+        </tr>
+        <tr>
+            <td><div id="die3"></div></td> <td><div id="die4"></div></td> <td><div id="die5"></div></td>
+        </tr>
+        <tr>
+            <td><div id="die6"></div></td> <td><div id="die7"></div></td> <td><div id="die8"></div></td>
+        </tr>
+        <tr>
+            <td><div id="die9"></div></td> <td><div id="die10"></div></td> <td><div id="die11"></div></td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
