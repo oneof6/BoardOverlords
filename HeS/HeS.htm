@@ -69,6 +69,9 @@
             default: modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
             '#If ENGAGED: Attack';
         }
+        //TODO: Remove following line, just testing
+        modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
+            '#If ENGAGED: Attack';
         document.getElementById("enemyMode").innerHTML = modeDesc;
     }
 
@@ -154,19 +157,28 @@
             margin: auto;
             display: block;
         }
-        .centerTbl {
-            margin-left: auto;
-            margin-right: auto;   
+
+        table {
+            float: left
         }
     </style>
 </head>
 
 <body>
-    <br>
-    <div id="enemyMode"></div>
     <table>
         <tr>
-            <td><input type="button" id="battleMode" value="battle mode" onClick="battleMode()"></td>    
+            <td>
+                <input type="number" id="cardsInPlay" maxlength="2" size="2"><br>
+                <input type="button" id="cardsInc" value=" + " onClick="cardsPlus()"><input type="button" id="cardsDec" value=" - " onClick="cardsMinus()">
+            </td>
+            <td><input type="button" id="cardOrder" value="card order" onClick="cardOrder()"><div id="order"></div></td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        </tr>
+        <tr>
+            <td><input type="number" id="numberRolls" maxlength="2" size="2"><br>
+                <input type="button" id="rollsInc" value=" + " onClick="rollsPlus()"><input type="button" id="rollsDec" value=" - " onClick="rollsMinus()">
+            </td>
+            <td><input type="button" id="roll" value="roll" onClick="execRolls()"></td>
         </tr>
         <tr>
             <td><input type="button" id="d20" value="roll d20" onClick="rollD20()"></td>
@@ -174,16 +186,9 @@
         </tr>
         <tr>
             <td>
-                <input type="number" id="cardsInPlay" maxlength="2" size="2"><br>
-                <input type="button" id="cardsInc" value=" + " onClick="cardsPlus()"><input type="button" id="cardsDec" value=" - " onClick="cardsMinus()">
-            </td>
-            <td><input type="button" id="cardOrder" value="card order" onClick="cardOrder()"><div id="order"></div></td>
-        </tr>
-        <tr>
-            <td><input type="number" id="numberRolls" maxlength="2" size="2"><br>
-                <input type="button" id="rollsInc" value=" + " onClick="rollsPlus()"><input type="button" id="rollsDec" value=" - " onClick="rollsMinus()">
-            </td>
-            <td><input type="button" id="roll" value="roll" onClick="execRolls()"></td>
+                <br>
+                <input type="button" id="battleMode" value="battle mode" onClick="battleMode()">
+            </td>   
         </tr>
     </table>
 
@@ -201,6 +206,10 @@
             <td><div id="die9"></div></td> <td><div id="die10"></div></td> <td><div id="die11"></div></td>
         </tr>
     </table>
+
+            <br>
+            <div id="enemyMode" style="clear:both"></div> 
+
 
 </body>
 
