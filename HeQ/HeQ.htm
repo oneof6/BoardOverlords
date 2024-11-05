@@ -4,7 +4,63 @@
 <head>
     
     <script>
+    window.gameSpace = {cardStack: []};
+    
+    function drawCard(){
+        //Get a random index, max value size of card stack
+        var idx = rollDice(gameSpace.cardStack.length)-1;
+        //Show card from stack and remove card until stack is empty
+        if(gameSpace.cardStack.length > 0){
+            document.getElementById("enemyMode").innerHTML = '<img src="'+gameSpace.cardStack[idx]+'">';
+            gameSpace.cardStack.splice(idx, 1);
+        }else{
+            document.getElementById("enemyMode").innerHTML = '<b>Need New Shuffle</b>';
+        }
+    }
 
+    function buildDeck(){
+        var game = document.getElementById("expansions").value;
+        gameSpace.cardStack = getCardRegistry(game);
+    }
+
+    function getCardRegistry(game){
+        //Base Game
+        CardB01 = "assets/BaseGame/card1.png";
+        CardB02 = "assets/BaseGame/card2.png";
+        CardB03 = "assets/BaseGame/card3.png";
+        CardB04 = "assets/BaseGame/card4.png";
+        CardB05 = "assets/BaseGame/card5.png";
+        CardB06 = "assets/BaseGame/card6.png";
+        CardB07 = "assets/BaseGame/card7.png";
+        CardB08 = "assets/BaseGame/card8.png";
+        CardB09 = "assets/BaseGame/card9.png";
+        CardB10 = "assets/BaseGame/card10.png";
+        CardB11 = "assets/BaseGame/card11.png";
+        CardB12 = "assets/BaseGame/card12.png";
+        CardB13 = "assets/BaseGame/card13.png";
+        CardB14 = "assets/BaseGame/card14.png";
+        CardB15 = "assets/BaseGame/card15.png";
+
+        switch(game){
+            case 'kellarsKeep':
+                CardKK21 = "assets/KellarsKeep/card21.png";
+                CardKK22 = "assets/KellarsKeep/card22.png";
+                CardKK23 = "assets/KellarsKeep/card23.png";
+                CardKK24 = "assets/KellarsKeep/card24.png";
+                CardKK25 = "assets/KellarsKeep/card25.png";
+                return cardStack = [CardB01, CardB02, CardB03, CardB04, CardB05,
+                                    CardB06, CardB07, CardB08, CardB09, CardB10,
+                                    CardB11, CardB12, CardB13, CardB14, CardB15, 
+                                    CardKK21, CardKK22, CardKK23, CardKK24, CardKK25];
+                break;
+
+            default:
+                return cardStack = [CardB01, CardB02, CardB03, CardB04, CardB05,
+                                   CardB06, CardB07, CardB08, CardB09, CardB10,
+                                   CardB11, CardB12, CardB13, CardB14, CardB15];
+
+        }
+    }
 
     function rollDice(sides){
         var rnd = Math.floor(Math.random() * sides);
@@ -22,9 +78,9 @@
         document.getElementById('order').innerHTML = '<b>' + order + '</b>';
     }
 
-    function rollD20(){
-        var d20 = rollDice(20);
-        document.getElementById('d20Field').innerHTML = '<img src="assets/d20.png"><b> -> ' + (d20) + '</b>';
+    function rollD6(){
+        var d6 = rollDice(6);
+        document.getElementById('d6Field').innerHTML = '<img src="assets/d6BlackWhite.png"><b> -> ' + (d6) + '</b>';
     }
 
     //TODO - Card based solo mode
@@ -33,29 +89,8 @@
     - buildGameDeck(deckBase, deckX... according to settings base, base + ogre horde, etc. use checkboxess, concat arrays, RET: arr)
     - deckBase, deckOgreHorde, deckX (return arr of strings with paths to card image)
     */
-    //TODO - Battle Mode
-    function battleMode(){
-        //Get a random number, we want 5 modes
-        var mode = rollDice(5);
-        var modeDesc = '';
-        switch(mode){
-            case 1: modeDesc = '<b>Meander</b><br>';
-            break;
-            case 2: modeDesc = '<b>Support</b><br>';
-            break;
-            case 3: modeDesc = '<b>Patrol</b><br>';
-            break;
-            case 4: modeDesc = '<b>Sweep</b><br>';
-            break;
-            case 5: modeDesc = '<b>Guard</b><br>';
-            break; 
-            default: modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
-            '#If ENGAGED: Attack';
-        }
-        document.getElementById("enemyMode").innerHTML = modeDesc;
-    }
 
-     //Sleep function to wait some time e.g. for polling, time in millisecs
+    //Sleep function to wait some time e.g. for polling, time in millisecs
     function sleepFor( sleepDuration ){
         var now = new Date().getTime();
         while(new Date().getTime() < now + sleepDuration){ / do nothing / }
@@ -137,27 +172,37 @@
             margin: auto;
             display: block;
         }
-        .centerTbl {
-            margin-left: auto;
-            margin-right: auto;   
+        
+        table {
+            float: left
         }
     </style>
 </head>
 
 <body>
-    <br>
-    <div id="enemyMode"></div>
     <table>
         <tr>
-            <td><input type="button" id="battleMode" value="battle mode" onClick="battleMode()"></td>    
+            <td>
+                <select name="expansionsGroup" id="expansions">
+                    <option value="">EXPANSION?</option>
+                    <option value="kellarsKeep">Kellars Keep</option>
+                    <option value="witchlord">Witchlord</option>
+                    <option value="ogre">Ogre Horde</option>
+                    <option value="dreadMoon">Dread Moon</option>
+                    <option value="frozenHorror">Frozen Horror</option>
+                    <option value="mageMirror">Mage Mirror</option>
+                    <option value="spiritQueen">Spirit Queen</option>
+                    <option value="telor">Telor</option>                   
+                  </select>
+            </td>
         </tr>
         <tr>
-            <td><input type="button" id="d20" value="roll d20" onClick="rollD20()"></td>
-            <td><div id="d20Field"><img src="assets/d20.png"></div></td>
+            <td><input type="button" id="buildDeck" value="Build Deck" onClick="buildDeck()"></td>
+            <td><input type="button" id="draw" value="Draw Card" onClick="drawCard()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>    
         </tr>
         <tr>
-            <td><input type="number" id="cardsInPlay" maxlength="2" size="2"></td>
-            <td><input type="button" id="cardOrder" value="card order" onClick="cardOrder()"><div id="order"></div></td>
+            <td><input type="button" id="d6" value="roll d6" onClick="rollD6()"></td>
+            <td><div id="d6Field"><img src="assets/d6BlackWhite.png"></div></td>
         </tr>
         <tr>
             <td><input type="number" id="numberRolls" maxlength="2" size="2"></td>
@@ -179,7 +224,8 @@
             <td><div id="die9"></div></td> <td><div id="die10"></div></td> <td><div id="die11"></div></td>
         </tr>
     </table>
-
+    <br>
+    <div id="enemyMode" style="clear:both"></div>
 </body>
 
 </html>
