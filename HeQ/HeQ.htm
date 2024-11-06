@@ -14,7 +14,7 @@
             document.getElementById("enemyMode").innerHTML = '<img src="'+gameSpace.cardStack[idx]+'">';
             gameSpace.cardStack.splice(idx, 1);
         }else{
-            document.getElementById("enemyMode").innerHTML = '<b>Need New Shuffle</b>';
+            document.getElementById("enemyMode").innerHTML = '<b>Build New Deck</b>';
         }
     }
 
@@ -54,11 +54,40 @@
                                     CardKK21, CardKK22, CardKK23, CardKK24, CardKK25];
                 break;
 
+            case 'witchLord':
+                CardKK26 = "assets/WitchLord/card26.png";
+                CardKK27 = "assets/WitchLord/card27.png";
+                CardKK28 = "assets/WitchLord/card28.png";
+                CardKK29 = "assets/WitchLord/card29.png";
+                CardKK30 = "assets/WitchLord/card30.png";
+                CardKK31 = "assets/WitchLord/card31.png";
+                CardKK32 = "assets/WitchLord/card32.png";
+                CardKK33 = "assets/WitchLord/card33.png";
+                CardKK34 = "assets/WitchLord/card34.png";
+                CardKK35 = "assets/WitchLord/card35.png";      
+                return cardStack = [CardB01, CardB02, CardB03, CardB04, CardB05,
+                                    CardB06, CardB07, CardB08, CardB09, CardB10,
+                                    CardB11, CardB12, CardB13, CardB14, CardB15, 
+                                    CardKK26, CardKK27, CardKK28, CardKK29, CardKK30,
+                                    CardKK31, CardKK32, CardKK33, CardKK34, CardKK35];
+                break;
+
+            case 'ogre':
+                CardKK36 = "assets/OgreHorde/card36.png";
+                CardKK37 = "assets/OgreHorde/card37.png";
+                CardKK38 = "assets/OgreHorde/card38.png";
+                CardKK39 = "assets/OgreHorde/card39.png";
+                CardKK40 = "assets/OgreHorde/card40.png"; 
+                return cardStack = [CardB01, CardB02, CardB03, CardB04, CardB05,
+                                    CardB06, CardB07, CardB08, CardB09, CardB10,
+                                    CardB11, CardB12, CardB13, CardB14, CardB15, 
+                                    CardKK36, CardKK37, CardKK38, CardKK39, CardKK40];
+                break;
+
             default:
                 return cardStack = [CardB01, CardB02, CardB03, CardB04, CardB05,
                                    CardB06, CardB07, CardB08, CardB09, CardB10,
                                    CardB11, CardB12, CardB13, CardB14, CardB15];
-
         }
     }
 
@@ -81,6 +110,18 @@
     function rollD6(){
         var d6 = rollDice(6);
         document.getElementById('d6Field').innerHTML = '<img src="assets/d6BlackWhite.png"><b> -> ' + (d6) + '</b>';
+    }
+
+    function rollsPlus(){
+        var val = document.getElementById('numberRolls').value;
+        val++;
+        document.getElementById('numberRolls').value = ""+val+"";
+    }
+
+    function rollsMinus(){
+        var val = document.getElementById('numberRolls').value;
+        val--;
+        document.getElementById('numberRolls').value = ""+val+"";
     }
 
     //TODO - Card based solo mode
@@ -186,7 +227,7 @@
                 <select name="expansionsGroup" id="expansions">
                     <option value="">EXPANSION?</option>
                     <option value="kellarsKeep">Kellars Keep</option>
-                    <option value="witchlord">Witchlord</option>
+                    <option value="witchLord">Witchlord</option>
                     <option value="ogre">Ogre Horde</option>
                     <option value="dreadMoon">Dread Moon</option>
                     <option value="frozenHorror">Frozen Horror</option>
@@ -205,7 +246,9 @@
             <td><div id="d6Field"><img src="assets/d6BlackWhite.png"></div></td>
         </tr>
         <tr>
-            <td><input type="number" id="numberRolls" maxlength="2" size="2"></td>
+            <td><input type="number" id="numberRolls" maxlength="2" size="2"><br>
+                <input type="button" id="rollsInc" value=" + " onClick="rollsPlus()"><input type="button" id="rollsDec" value=" - " onClick="rollsMinus()">
+            </td>
             <td><input type="button" id="roll" value="roll" onClick="execRolls()"></td>
         </tr>
     </table>
