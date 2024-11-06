@@ -56,22 +56,20 @@
         var mode = rollDice(5);
         var modeDesc = '';
         switch(mode){
-            case 1: modeDesc = '<b>Meander</b><br>';
+            case 1: modeDesc = '<b>Meander</b><br>#NOT ENGAGED: Move to closest enemy and attack if possible<br>#ENGAGED: Attack engaged enemy';
             break;
-            case 2: modeDesc = '<b>Support</b><br>';
+            case 2: modeDesc = '<b>Support</b><br>#NOT ENGAGED: Help weakest own troop, attack if possible<br>#ENGAGED: Leave to help';
             break;
-            case 3: modeDesc = '<b>Patrol</b><br>';
+            case 3: modeDesc = '<b>Patrol</b><br>#NOT ENGAGED: Move towards strongest enemy, attack any in range<br>#ENGAGED: If a weaker enemy can be reached, leave and attack weaker. Otherwise, attack engaged.';
             break;
-            case 4: modeDesc = '<b>Sweep</b><br>';
+            case 4: modeDesc = '<b>Sweep</b><br>#NOT ENGAGED: All movement points must be used to reach an enemy from strongest to weakest. Attack any in range.<br>#ENGAGED: Attack engaged enemy';
             break;
-            case 5: modeDesc = '<b>Guard</b><br>';
+            case 5: modeDesc = '<b>Guard</b><br>#NOT ENGAGED: Move to closest strategic position (height, bush, glyph, cover), attack closest if possible<br>#ENGAGED: Attack engaged enemy';
             break; 
             default: modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
             '#If ENGAGED: Attack';
         }
-        //TODO: Remove following line, just testing
-        modeDesc = '<b>Meander</b><br>#If NOT engaged: Move to closest enemy, try to take height or Glyph. Attack if in range. <br>' +
-            '#If ENGAGED: Attack';
+
         document.getElementById("enemyMode").innerHTML = modeDesc;
     }
 
@@ -142,13 +140,6 @@
             background-repeat: no-repeat;
             background-attachment: fixed; 
             background-size: 100% 100%;
-        }
-        canvas {
-            background: white;
-            width: 100%;
-            max-width: 480px;
-            margin: auto;
-            display: block;
         }
         div {
             color: lightskyblue;
