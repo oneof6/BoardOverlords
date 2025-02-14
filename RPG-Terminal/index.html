@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!--
+Source: https://itnext.io/how-to-create-interactive-terminal-like-website-888bb0972288
+<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.terminal/css/jquery.terminal.min.css"/>
+-->
+
+<script src="libs/jquery-3.7.1.slim.min.js"></script>
+<script src="libs/jquery.terminal.min.js"></script>
+<link rel="stylesheet" href="./libs/jquery.terminal.min.css"/>
+
+<style>
+    :root {
+    --color: hsl(282, 64%, 42%);
+    cursor: pointer;
+    --glow: 1;
+    transition: --color 0.5s linear;
+    }
+</style>
+
+</head>
+<body>
+
+<script>
+    $('body').terminal({
+        hello: function(what) {
+            this.echo('Hello, ' + what +
+                      '. Welcome to the RPG command terminal.');
+        },
+        help: function(){
+            this.echo("A minimal, all-in-one toolkit to play your favorite tabletop RPGs without a GM.\n" +
+	            "\n" +
+	            "HOW TO PLAY\n" +
+	            "1. Create one or more characters using" +
+	            " your chosen game system.\n" +
+	            "2. Roll a starting PLOT HOOK and a" +
+	            " RANDOM EVENT, then SET THE SCENE.\n" +
+	            "3. Start asking the ORACLE questions." +
+	            " Interpret the answers in context.\n" +
+	            "4. Play the game to overcome the" +
+	            " challenges of the scene.\n" +
+	            "5. Use GM MOVES to move the action.\n" +
+	            "6. SET THE SCENE for the next thing you" +
+	            " want your character to do.\n");
+            this.echo("Available commands:");
+            this.echo("clear                    - Clears the current terminal");
+            this.echo("man <command>            - Shows the manpage of the relevant command");
+            this.echo("getyesno <likelihood>    - Rolls for Yes/No given likely, even, unlikely. MNEMONIC -gys-");
+            this.echo("roll <sides>             - Rolls a single dice with the amount of sides e.g. 6 for a d6");
+            this.echo("getscenecomplication     - Returns a complication to a scene your party is currently in. MNEMONIC -gsc-");
+            this.echo("gethow                   - Returns a value how something is e.g. how big, how strong, etc.");
+            this.echo("getactionfocus           - Returns a focus what something does and a domain the action applies to. MNEMONIC -gaf-");
+            this.echo("getdetailfocus           - Returns a focus what kind of thing something is and a domain the perception applies to. MNEMONIC -gdf-");                                                 
+            this.echo("gettopicfocus            - Returns a focus what some topic is about and a domain it applies to. MNEMONIC -gtf-");
+            this.echo("getdifficulty <bonus>    - Returns how difficult a task is. Apply a bonus +1 or -1, supply 0 if no bonus. MNEMONIC -gd-");
+            this.echo("getrandomevent           - Creates an event using action focus and topic focus");
+            this.echo("getpacingmove            - Returns a move the GM would do. MNEMONIC -gpm-");
+            this.echo("getfailuremove           - Returns a failure move if the players fails in something. MNEMONIC -gfm-");             
+        },
+        //MANPAGE interpreter
+        man: function(command){
+            switch(command){
+                case "getyesno": this.echo(oracle.manpage.getYesNo);
+                    break;
+                case "roll": this.echo("MANPAGE command - roll \n" + 
+                    "Roll single dice, the number indicates the sides. A d6 would be - roll 6.");
+                    break;
+                case "getscenecomplication": this.echo(oracle.manpage.getSceneComplication);
+                    break;
+                case "gethow": this.echo(oracle.manpage.getHow);
+                    break;
+                case "getactionfocus": this.echo(oracle.manpage.getActionFocus);
+                    break;
+                case "getdetailfocus": this.echo(oracle.manpage.getDetailFocus);
+                    break;
+                case "gettopicfocus": this.echo(oracle.manpage.getTopicFocus);
+                    break;
+                case "getdifficulty": this.echo(oracle.manpage.getDifficulty);
+                    break;
+                case "getpacingmove": this.echo(oracle.manpage.getPacingMove);
+                    break;                              
+                default: this.echo("Please provide a valid command. Please note, some commands do not have manpages.");
+            }
+        },
+        //COMMAND interpreters
+        roll: function(sides){
+            this.echo("[[i;cyan;black]" + rollDice(6) + "]");
+        },
+        getyesno: function(likelihood){
+            this.echo("[[i;cyan;black]" + oracle.getYesNo(likelihood) + "]");
+        },
+        gys: function(likelihood){
+            this.echo("[[i;cyan;black]" + oracle.getYesNo(likelihood) + "]");
+        },
+        getscenecomplication: function(){
+            this.echo("[[i;cyan;black]" + oracle.getSceneComplication() + "]");
+        },
+        gsc: function(){
+            this.echo("[[i;cyan;black]" + oracle.getSceneComplication() + "]");
+        },
+        gethow: function(){
+            this.echo("[[i;cyan;black]" + oracle.getHow() + "]");
+        },
+        getactionfocus: function(){
+            this.echo("[[i;cyan;black]" + oracle.getActionFocus() + "]");
+        },
+        gaf: function(){
+            this.echo("[[i;cyan;black]" + oracle.getActionFocus() + "]");
+        },
+        getdetailfocus: function(){
+            this.echo("[[i;cyan;black]" + oracle.getDetailFocus() + "]");
+        },
+        gdf: function(){
+            this.echo("[[i;cyan;black]" + oracle.getDetailFocus() + "]");
+        },
+        gettopicfocus: function(){
+            this.echo("[[i;cyan;black]" + oracle.getTopicFocus() + "]");
+        },
+        gtf: function(){
+            this.echo("[[i;cyan;black]" + oracle.getTopicFocus() + "]");
+        },
+        getdifficulty: function(bonus){
+            this.echo("[[i;cyan;black]" + oracle.getDifficulty(bonus) + "]");
+        },
+        gd: function(bonus){
+            this.echo("[[i;cyan;black]" + oracle.getDifficulty(bonus) + "]");
+        },
+        getrandomevent: function(){
+            this.echo("[[i;cyan;black]" + oracle.getRandomEvent() + "]"); 
+        },
+        getpacingmove: function(){
+            this.echo("[[i;cyan;black]" + oracle.getPacingMove() + "]");
+        },
+        gpm: function(){
+            this.echo("[[i;cyan;black]" + oracle.getPacingMove() + "]");
+        },
+        getfailuremove: function(){
+            this.echo("[[i;cyan;black]" + oracle.getFailureMove() + "]");
+        },
+        gfm: function(){
+            this.echo("[[i;cyan;black]" + oracle.getFailureMove() + "]"); //TODO help and manpage
+        }                                   
+    }, {
+        greetings: 'Solo engine RPG command terminal'
+    });
+
+
+    //*************************** GLOBAL FUNCTIONS ****************************
+    function rollDice(sides){
+        var rnd = Math.floor(Math.random() * sides);
+        return rnd+1;
+    }
+
+
+    //*************************************************************************
+    //*** OBJ: Oralce                                                       ***
+    //*** PURPOSE: Holding all roll commands to determine RPG states        ***
+    //*************************************************************************
+    let oracle = {};
+
+    oracle.manpage = {};
+    oracle.manpage.getYesNo = "MANPAGE object Oracle command - getYesNo: \n" + 
+        "USAGE: Supplies an answer based on the three possible likelihoods likely, even, unlikely \n" +
+        "RPG CONTEXT: When you need to ask a simple question, choose the likelihood for YES and roll.";
+    oracle.manpage.getSceneComplication = "MANPAGE object Oracle command - getSceneComplication \n" +
+        "RPG CONTEXT: Describe where your character is and what they are trying to accomplish, then roll for a SCENE COMPLICATION.";
+    oracle.manpage.getHow = "MANPAGE object Oracle command - getHow \n" +
+        "RPG CONTEXT: When you need to know how big, good, strong, numerous, etc. something is.";
+    oracle.manpage.getActionFocus = "MANPAGE object Oracle command - getActionFocus \n" +
+        "RPG CONTEXT: When you have a broad question or need to know details about something action wise. Remember to \n" +
+            "apply the DOMAIN when interpreting the result. Action focus answers -What does it do?-.";
+    oracle.manpage.getDetailFocus = "MANPAGE object Oracle command - getDetailFocus \n" +
+        "RPG CONTEXT: When you have a broad question or need to know details about something perception wise. Remember to \n" +
+            "apply the DOMAIN when interpreting the result. Detail focus answers -What kind of thing is it?-.";
+    oracle.manpage.getTopicFocus = "MANPAGE object Oracle command - getTopicFocus \n" +
+        "RPG CONTEXT: When you have a broad question or need to know what topic something revolves around. Remember to \n" +
+            "apply the DOMAIN when interpreting the result. Detail focus answers -What is this about?-.";
+    oracle.manpage.getDifficulty = "MANPAGE object Oracle command - getDifficulty \n" +
+        "USAGE: Use normal call with >gd 0, apply bonus if you have a talent, skill, equipment >gd 1 or if you are injured etc. >gd -1 \n" +
+        "RPG CONTEXT: When you need to know how diffcult something is e.g. to hit a target. Some rulesets like OPR OnePageRules RPG \n" +
+            "use a success/failure roll. This ruleset applies e.g. trivial hit to success +5, easy +2, moderate 0, difficult -5, \n" + 
+            "hard -10, nearly impossible -15.";
+    oracle.manpage.getPacingMove = "MANPAGE object Oracle command - getPacingMove \n" +
+        "RPG CONTEXT: When you need to advance the action, describe the results as the GM normally would. \n" +
+            "Use a PACING MOVE when there is a lull in the action, or you think what now?";
+
+    oracle.man = function(){
+        return this.manpage;
+    }
+
+    oracle.getYesNo = function(likelihood){
+        let roll = rollDice(6);
+
+        if (likelihood == "likely" && roll > 3){
+            return "YES";
+        } else if (likelihood == "even" && roll > 4){
+            return "YES";
+        } else if (likelihood == "unlikely" && roll > 5){
+            return "YES";
+        } else {
+            return "NO";
+        }
+
+    }
+
+    oracle.getSceneComplication = function(){
+        let roll = rollDice(6);
+
+        switch(roll){
+            case 1: return "Hostile forces oppose you...";
+                break;
+            case 2: return "An obstacle blocks your way...";
+                break;
+            case 3: return "Something good happens and things go as planned...";
+                break;
+            case 4: return "An NPC acts suddenly...";
+                break;
+            case 5: return "All is not as is seems...";
+                break;
+            case 6: return "Things actually go as planned...";
+                break;
+            default: return "[ERR] Roll not known";
+        }
+    }
+
+    oracle.getHow = function(){
+        let roll = rollDice(6);
+
+        switch(roll){
+            case 1: return "Surprisingly lacking...";
+                break;
+            case 2: return "Less than expected...";
+                break;
+            case 3: 
+            case 4: return "About average...";
+                break;
+            case 5: return "More than expected...";
+                break;
+            case 6: return "Extraordinary...";
+                break;
+            default: return "[ERR] Roll not known";
+        }
+    }
+
+    oracle.getActionFocus = function(){
+        let roll = rollDice(13);
+        let domain = rollDice(4);
+        let answer = "";
+
+        switch(domain){
+            case 1: domain = "Physical (appearance, existence)";
+                break;
+            case 2: domain = "Technical (mental, operation)";
+                break;
+            case 3: domain = "Mystical (meaning, capability)";
+                break;
+            case 4: domain = "Social (personal, connection)";
+                break;
+            default: domain = "Roll not known";
+        }
+
+        switch(roll){
+            case 1: answer = "Seek...";
+                break;
+            case 2: answer = "Oppose...";
+                break;
+            case 3: answer = "Communicate...";
+                break;
+            case 4: answer = "Move...";
+                break;
+            case 5: answer = "Harm...";
+                break;
+            case 6: answer = "Create...";
+                break;
+            case 7: answer = "Reveal...";
+                break;
+            case 8: answer = "Command...";
+                break;
+            case 9: answer = "Take...";
+                break;
+            case 10: answer = "Protect...";
+                break;
+            case 11: answer = "Assist...";
+                break;
+            case 12: answer = "Transform...";
+                break;
+            case 13: answer = "Deceive...";
+                break;
+            default: answer = "[ERR] Roll not known";
+        }
+
+        answer = "DOMAIN: " + domain + "\nACTION FOCUS: " + answer;
+        return answer;
+
+    }
+
+    oracle.getDetailFocus = function(){
+        let roll = rollDice(13);
+        let domain = rollDice(4);
+        let answer = "";
+
+        switch(domain){
+            case 1: domain = "Physical (appearance, existence)";
+                break;
+            case 2: domain = "Technical (mental, operation)";
+                break;
+            case 3: domain = "Mystical (meaning, capability)";
+                break;
+            case 4: domain = "Social (personal, connection)";
+                break;
+            default: domain = "Roll not known";
+        }
+
+        switch(roll){
+            case 1: answer = "Small...";
+                break;
+            case 2: answer = "Large...";
+                break;
+            case 3: answer = "Old...";
+                break;
+            case 4: answer = "New...";
+                break;
+            case 5: answer = "Mundane, profane...";
+                break;
+            case 6: answer = "Simple...";
+                break;
+            case 7: answer = "Complex...";
+                break;
+            case 8: answer = "Unsavory, disgusting...";
+                break;
+            case 9: answer = "Specialised...";
+                break;
+            case 10: answer = "Unexpected...";
+                break;
+            case 11: answer = "Exotic...";
+                break;
+            case 12: answer = "Dignified, worthy, honourable...";
+                break;
+            case 13: answer = "Unique...";
+                break;
+            default: answer = "[ERR] Roll not known";
+        }
+
+        answer = "DOMAIN: " + domain + "\nDETAIL FOCUS: " + answer;
+        return answer;
+
+    }
+
+    oracle.getTopicFocus = function(){
+        let roll = rollDice(13);
+        let domain = rollDice(4);
+        let answer = "";
+
+        switch(domain){
+            case 1: domain = "Physical (appearance, existence)";
+                break;
+            case 2: domain = "Technical (mental, operation)";
+                break;
+            case 3: domain = "Mystical (meaning, capability)";
+                break;
+            case 4: domain = "Social (personal, connection)";
+                break;
+            default: domain = "Roll not known";
+        }
+
+        switch(roll){
+            case 1: answer = "Current need...";
+                break;
+            case 2: answer = "Allies...";
+                break;
+            case 3: answer = "Community...";
+                break;
+            case 4: answer = "History...";
+                break;
+            case 5: answer = "Future plans...";
+                break;
+            case 6: answer = "Enemies...";
+                break;
+            case 7: answer = "Knowledge...";
+                break;
+            case 8: answer = "Rumors...";
+                break;
+            case 9: answer = "A plort arc...";
+                break;
+            case 10: answer = "Recent events...";
+                break;
+            case 11: answer = "Equipment...";
+                break;
+            case 12: answer = "A faction...";
+                break;
+            case 13: answer = "The players...";
+                break;
+            default: answer = "[ERR] Roll not known";
+        }
+
+        answer = "DOMAIN: " + domain + "\nTOPIC FOCUS: " + answer;
+        return answer;
+
+    }
+
+    oracle.getDifficulty = function(bonus){
+        let roll = rollDice(6);
+
+        //Bonus calc - 5 is next to impossible, if bonus is +1 we reduce the roll by 1 if possible
+        if(bonus>0 && roll>1){
+            roll--;
+        }
+        //Negative bonus calc - we increase the roll by 1 if possible
+        if(bonus<0 && roll<6){
+            roll++
+        }
+        
+        switch(roll){
+            case 1: return "Trivial";
+                break;
+            case 2: return "Easy";
+                break;
+            case 3: return "Moderate";
+                break;
+            case 4: return "Difficult";
+                break;
+            case 5: return "Hard";
+                break;
+            case 6: return "Nearly impossible";
+                break;
+            default: return "Roll not known";
+        }
+        
+    }
+
+    oracle.getRandomEvent = function(){
+        let actionFocus = this.getActionFocus();
+        let topicFocus = this.getTopicFocus();
+        return "What happens -> " + actionFocus + "\n" + "Involving -> " + topicFocus;
+    }
+
+
+    oracle.getPacingMove = function(){
+        let roll = rollDice(6);
+        
+        switch(roll){
+            case 1: return "Foreshadow trouble";
+                break;
+            case 2: return "Reveal a new detail";
+                break;
+            case 3: return "An NPC takes action";
+                break;
+            case 4: return "Advance a threat";
+                break;
+            case 5: return "Advance a plot";
+                break;
+            case 6: return this.getRandomEvent();
+                break;
+            default: return "Roll not known";
+        }
+        
+    }
+
+    oracle.getFailureMove = function(){
+        let roll = rollDice(6);
+        
+        switch(roll){
+            case 1: return "Cause harm";
+                break;
+            case 2: return "Put someone in a spot";
+                break;
+            case 3: return "Offer a choice";
+                break;
+            case 4: return "Advance a threat";
+                break;
+            case 5: return "Reveal an unwelcome truth";
+                break;
+            case 6: return "Foreshadow trouble";
+                break;
+            default: return "Roll not known";
+        }
+        
+    }
+    //*************************************************************************
+    //******************************** OBJ END ********************************
+    //*************************************************************************
+
+</script>
+
+</body>
+</html>
