@@ -430,7 +430,7 @@
         <tr><td>20–21</td><td>All-out reckless assault</td></tr>
         <tr><td>22+</td><td>Devastating combo, or calls for reinforcements</td></tr>
       </table>
-      <p class="meta">Status modifier: Healthy +0, Bloodied −3, Critical −6. Morale modifier: Steady +0, Wavering −3, Broken −7. A total that overflows the table's ends is simply clamped to the nearest listed row.</p>
+      <p class="meta">Status modifier: Healthy +1, Bloodied −3, Critical −6. Morale modifier: Steady +1, Wavering −3, Broken −7. A total that overflows the table's ends is simply clamped to the nearest listed row.</p>
     </div>
   </section>
 
@@ -791,8 +791,8 @@ function rollEnemyIntent(){
     morale = document.getElementById('manualMorale').value;
     name = 'The foe';
   }
-  const healthMod = health==='healthy'?0 : health==='bloodied'?-3 : -6;
-  const moraleMod = morale==='steady'?0 : morale==='wavering'?-3 : -7;
+  const healthMod = health==='healthy'? +1 : health==='bloodied'?-3 : -6;
+  const moraleMod = morale==='steady'? +1 : morale==='wavering'?-3 : -7;
   const roll = d(20);
   let total = roll + healthMod + moraleMod;
   if(total < 1) total = 1;
