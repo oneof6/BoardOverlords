@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wandering Oracle — Solo Game Master's Grimoire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#e9d9ae;
+    --parchment-dark:#dcc491;
+    --parchment-shadow:#c9a86a;
+    --ink:#2c1608;
+    --ink-soft:#4a2f18;
+    --wood:#3a2210;
+    --wood-dark:#1c0f05;
+    --gold:#a9782f;
+    --gold-bright:#d4a13d;
+    --wine:#6e1414;
+    --wine-bright:#9b2a2a;
+    --forest:#2f4a2a;
+    --steel:#3c4a55;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(255,220,150,0.08), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(0,0,0,0.35), transparent 60%),
+      linear-gradient(160deg, var(--wood-dark), var(--wood) 45%, var(--wood-dark));
+    font-family:'EB Garamond', Georgia, serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding:18px 12px 60px;
+  }
+  .page{
+    max-width:980px;
+    margin:0 auto;
+    background:
+      repeating-linear-gradient(0deg, rgba(120,90,40,0.04) 0px, rgba(120,90,40,0.04) 2px, transparent 2px, transparent 4px),
+      radial-gradient(ellipse at 30% 20%, rgba(255,250,230,0.5), transparent 55%),
+      linear-gradient(135deg, var(--parchment), var(--parchment-dark) 60%, var(--parchment-shadow));
+    border:10px solid var(--wood);
+    outline:2px solid var(--gold);
+    outline-offset:-16px;
+    border-radius:6px;
+    box-shadow: 0 0 0 4px var(--wood-dark), 0 20px 60px rgba(0,0,0,0.6), inset 0 0 80px rgba(90,60,20,0.25);
+    padding:28px 30px 34px;
+    position:relative;
+  }
+  .corner{
+    position:absolute; width:34px; height:34px; opacity:0.75;
+    border:3px solid var(--gold); pointer-events:none;
+  }
+  .corner.tl{top:-20px;left:-20px;border-right:none;border-bottom:none;border-radius:8px 0 0 0;}
+  .corner.tr{top:-20px;right:-20px;border-left:none;border-bottom:none;border-radius:0 8px 0 0;}
+  .corner.bl{bottom:-20px;left:-20px;border-right:none;border-top:none;border-radius:0 0 0 8px;}
+  .corner.br{bottom:-20px;right:-20px;border-left:none;border-top:none;border-radius:0 0 8px 0;}
+
+  header{text-align:center; margin-bottom:14px;}
+  header .glyphs{letter-spacing:10px; color:var(--gold); font-size:14px; margin-bottom:2px;}
+  h1{
+    font-family:'Cinzel Decorative', 'Cinzel', serif;
+    font-size:clamp(28px, 4.4vw, 46px);
+    margin:2px 0 4px;
+    color:var(--wine);
+    text-shadow: 1px 1px 0 rgba(255,240,210,0.6), 2px 2px 3px rgba(0,0,0,0.25);
+    letter-spacing:1px;
+  }
+  header .subtitle{
+    font-family:'Cinzel', serif;
+    font-size:14px; letter-spacing:3px; text-transform:uppercase; color:var(--ink-soft);
+  }
+  .divider{
+    display:flex; align-items:center; gap:10px; margin:14px 0 18px; color:var(--gold);
+  }
+  .divider::before, .divider::after{content:""; flex:1; height:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+  .divider span{font-size:20px;}
+
+  /* Chaos bar - always visible */
+  .chaos-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    background: linear-gradient(180deg, rgba(60,20,20,0.08), rgba(60,20,20,0.15));
+    border:2px solid var(--gold); border-radius:8px; padding:10px 16px; margin-bottom:18px;
+  }
+  .chaos-bar .label{font-family:'Cinzel',serif; font-weight:700; color:var(--wine); letter-spacing:1px;}
+  .chaos-dots{display:flex; gap:5px;}
+  .chaos-dot{
+    width:22px; height:22px; border-radius:50%; border:2px solid var(--wood);
+    background:var(--parchment-dark); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:var(--ink-soft); transition:transform .1s;
+  }
+  .chaos-dot.filled{background:radial-gradient(circle at 35% 30%, var(--wine-bright), var(--wine)); color:#f4e4c1; border-color:var(--wine);}
+  .chaos-dot:hover{transform:scale(1.15);}
+  .chaos-desc{font-size:13px; color:var(--ink-soft); font-style:italic; max-width:260px;}
+
+  /* Tabs */
+  nav.tabs{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; justify-content:center;}
+  nav.tabs button{
+    font-family:'Cinzel', serif; font-size:13px; letter-spacing:0.5px; text-transform:uppercase;
+    background:linear-gradient(180deg, var(--parchment-dark), var(--parchment-shadow));
+    border:2px solid var(--wood); color:var(--ink); padding:9px 16px; border-radius:6px 6px 0 0;
+    cursor:pointer; box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+  }
+  nav.tabs button.active{
+    background:linear-gradient(180deg, var(--wine-bright), var(--wine)); color:#f6e9c8; border-color:var(--wine);
+  }
+  nav.tabs button:hover{filter:brightness(1.05);}
+
+  section.tabpanel{display:none; animation:fadein .25s ease;}
+  section.tabpanel.active{display:block;}
+  @keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .card{
+    background:rgba(255,250,235,0.45);
+    border:1px solid var(--gold); border-radius:8px; padding:16px 18px; margin-bottom:16px;
+    box-shadow: inset 0 0 20px rgba(120,90,40,0.08);
+  }
+  .card h2{
+    font-family:'Cinzel', serif; font-size:19px; color:var(--wine); margin:0 0 6px;
+    display:flex; align-items:center; gap:8px; letter-spacing:0.5px;
+  }
+  .card h2 .ico{font-size:20px;}
+  .card p.desc{margin:0 0 12px; font-size:16px; color:var(--ink-soft); font-style:italic;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:700px){.grid2{grid-template-columns:1fr;}}
+
+  label{font-size:13px; font-weight:600; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  select, input[type=number], input[type=text]{
+    font-family:'EB Garamond', serif; font-size:15px; padding:6px 8px; border:1.5px solid var(--gold);
+    border-radius:5px; background:#fbf3de; color:var(--ink); width:100%;
+  }
+  .row{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:10px;}
+  .row > div{flex:1; min-width:130px;}
+
+  button.action{
+    font-family:'Cinzel', serif; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
+    font-size:13px; padding:10px 18px; border-radius:6px; border:2px solid var(--wood);
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:var(--wood-dark);
+    cursor:pointer; box-shadow:0 3px 0 var(--wood); transition:transform .05s;
+  }
+  button.action:active{transform:translateY(2px); box-shadow:0 1px 0 var(--wood);}
+  button.action.big{font-size:15px; padding:12px 26px;}
+  button.action.wine{background:linear-gradient(180deg, var(--wine-bright), var(--wine)); color:#f6e9c8;}
+  button.action.forest{background:linear-gradient(180deg, #5a7d52, var(--forest)); color:#f0f6ea;}
+  button.action.steel{background:linear-gradient(180deg,#5c6f7d, var(--steel)); color:#eef3f6;}
+
+  .result-box{
+    margin-top:12px; padding:12px 14px; border-radius:6px; min-height:20px;
+    background:rgba(40,20,10,0.06); border-left:4px solid var(--gold); font-size:15px;
+  }
+  .result-box .big-answer{font-family:'Cinzel', serif; font-size:20px; font-weight:700; letter-spacing:0.5px;}
+  .yes{color:var(--forest);}
+  .no{color:var(--wine);}
+  .exceptional{text-decoration:underline; text-decoration-style:wavy;}
+  .meta{font-size:14px; color:var(--ink-soft); margin-top:4px;}
+
+  table.ref{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
+  table.ref th, table.ref td{border:1px solid var(--gold); padding:5px 8px; text-align:left;}
+  table.ref th{background:rgba(169,120,47,0.25); font-family:'Cinzel',serif; font-size:12px;}
+
+  .dice-tray{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+  .die-btn{
+    width:56px; height:56px; border-radius:10px; border:2px solid var(--wood);
+    background:linear-gradient(145deg, #fbf3de, #dcc491);
+    font-family:'Cinzel', serif; font-weight:700; font-size:14px; color:var(--wood-dark);
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 3px 0 var(--wood);
+  }
+  .die-btn:active{transform:translateY(2px); box-shadow:0 1px 0 var(--wood);}
+  .die-btn small{font-size:9px; opacity:0.7;}
+  .roll-log{max-height:160px; overflow-y:auto; font-size:13px; margin-top:8px; border-top:1px dashed var(--gold); padding-top:6px;}
+  .roll-log div{padding:2px 0; border-bottom:1px solid rgba(169,120,47,0.2);}
+
+  .enemy-card{border:1px solid var(--gold); border-radius:8px; padding:10px 12px; margin-bottom:10px; background:rgba(255,250,235,0.5);}
+  .enemy-card .name-row{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .enemy-card input[type=text]{font-family:'Cinzel',serif; font-weight:700; font-size:15px; border:none; background:transparent; padding:2px; color:var(--wine);}
+  .hp-bar-outer{background:#3a2210; border-radius:6px; height:14px; overflow:hidden; margin:6px 0 4px; border:1px solid var(--wood);}
+  .hp-bar-inner{height:100%; background:linear-gradient(90deg, #7a1414, #c23b3b); transition:width .2s;}
+  .enemy-controls{display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:12px;}
+  .enemy-controls input[type=number]{width:60px; padding:3px 5px;}
+  .remove-btn{background:none; border:1px solid var(--wine); color:var(--wine); border-radius:4px; padding:2px 8px; cursor:pointer; font-size:12px;}
+
+  .oracle-scroll{white-space:pre-wrap; font-size:13.5px;}
+  textarea.field{
+    width:100%; min-height:70px; font-family:'EB Garamond', serif; font-size:14px; padding:8px;
+    border:1.5px solid var(--gold); border-radius:5px; background:#fbf3de; color:var(--ink); resize:vertical;
+  }
+  .taglist{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+  .tag{background:rgba(169,120,47,0.25); border:1px solid var(--gold); border-radius:12px; padding:3px 10px; font-size:12px;}
+
+  footer{text-align:center; margin-top:20px; font-size:12px; color:var(--ink-soft); opacity:0.8;}
+  .ornament{text-align:center; font-size:22px; color:var(--gold); margin:6px 0;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+  <header>
+    <div class="glyphs">✦ ⚜ ✦</div>
+    <h1>The Wandering Oracle</h1>
+    <div class="subtitle">A Solo Game Master's Grimoire</div>
+  </header>
+
+  <div class="divider"><span>🐉</span></div>
+
+  <!-- CHAOS FACTOR - always visible, drawn from Mythic GM Emulator -->
+  <div class="chaos-bar">
+    <div class="label">⚔ Chaos Factor</div>
+    <div class="chaos-dots" id="chaosDots"></div>
+    <div class="chaos-desc" id="chaosDesc">The tide of fate. Raise it after a wild, uncontrolled scene; lower it after a calm one. Higher chaos means "yes" answers and random events grow more likely.</div>
+  </div>
+
+  <nav class="tabs" id="tabNav">
+    <button data-tab="oracle" class="active">🔮 Oracle &amp; Fate</button>
+    <button data-tab="story">📜 Scene &amp; Story</button>
+    <button data-tab="battle">⚔️ Enemy AI &amp; Battle</button>
+    <button data-tab="dice">🎲 Dice Tower</button>
+    <button data-tab="help">📖 How It Works</button>
+  </nav>
+
+  <!-- ORACLE TAB -->
+  <section class="tabpanel active" id="tab-oracle">
+    <div class="card">
+      <h2><span class="ico">❓</span> Ask the Oracle (Yes/No)</h2>
+      <p class="desc">Form a simple yes/no question aloud, judge how likely it seems, then let fate decide. Based on Mythic's Fate Chart.</p>
+      <div class="row">
+        <div>
+          <label>How likely is a "Yes"?</label>
+          <select id="oddsSelect">
+            <option value="5">Impossible</option>
+            <option value="15">No Way</option>
+            <option value="25">Very Unlikely</option>
+            <option value="35">Unlikely</option>
+            <option value="50" selected>50 / 50</option>
+            <option value="65">Somewhat Likely</option>
+            <option value="75">Likely</option>
+            <option value="85">Very Likely</option>
+            <option value="90">Near Sure Thing</option>
+            <option value="95">A Sure Thing</option>
+            <option value="99">Has to Be</option>
+          </select>
+        </div>
+        <div style="flex:0 0 auto;"><button class="action wine big" onclick="askOracle()">Consult the Oracle</button></div>
+      </div>
+      <div class="result-box" id="oracleResult">Awaiting a question, traveler…</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">📏</span> Ask the Oracle (How Much?)</h2>
+      <p class="desc">Use when you need to know how big, strong, numerous, rich, dangerous — anything measured in degree.</p>
+      <button class="action" onclick="askHow()">Roll the Degree</button>
+      <div class="result-box" id="howResult">—</div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="ico">🌩️</span> Random Event</h2>
+        <p class="desc">Something happens beyond logic's reach. Roll Focus, then Action + Subject, and weave them into your scene's context.</p>
+        <button class="action forest" onclick="rollRandomEvent()">Roll a Random Event</button>
+        <div class="result-box" id="eventResult">—</div>
+      </div>
+      <div class="card">
+        <h2><span class="ico">🃏</span> Focus Oracles</h2>
+        <p class="desc">For open questions like "what happens?", "what is it?", or "what's this about?" Draws from card-style focus tables (d12 rank + d4 domain).</p>
+        <div class="row">
+          <div>
+            <label>Which focus?</label>
+            <select id="focusSelect">
+              <option value="action">Action Focus — what does it do?</option>
+              <option value="detail">Detail Focus — what kind of thing?</option>
+              <option value="topic">Topic Focus — what's this about?</option>
+            </select>
+          </div>
+          <div style="flex:0 0 auto;"><button class="action" onclick="rollFocus()">Draw</button></div>
+        </div>
+        <div class="result-box" id="focusResult">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY TAB -->
+  <section class="tabpanel" id="tab-story">
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="ico">🎬</span> Set the Scene</h2>
+        <p class="desc">Describe where your character is and what they intend to accomplish, then check for a complication.</p>
+        <button class="action" onclick="rollComplication()">Roll Scene Complication</button>
+        <div class="result-box" id="complicationResult">—</div>
+      </div>
+      <div class="card">
+        <h2><span class="ico">🧭</span> GM Moves</h2>
+        <p class="desc">Use a Pacing Move when there's a lull. Use a Failure Move when the party fails a check.</p>
+        <div class="row">
+          <button class="action steel" onclick="rollMove('pacing')">Pacing Move</button>
+          <button class="action wine" onclick="rollMove('failure')">Failure Move</button>
+        </div>
+        <div class="result-box" id="moveResult">—</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="ico">🧑‍🌾</span> NPC Generator</h2>
+        <button class="action" onclick="rollNPC()">Conjure an NPC</button>
+        <div class="result-box" id="npcResult">—</div>
+      </div>
+      <div class="card">
+        <h2><span class="ico">🗺️</span> Plot Hook Generator</h2>
+        <button class="action" onclick="rollPlotHook()">Weave a Plot Hook</button>
+        <div class="result-box" id="hookResult">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">🏰</span> Dungeon Crawler</h2>
+      <p class="desc">Roll a new area whenever the party pushes into unexplored territory. The first area always has 3 exits.</p>
+      <button class="action forest" onclick="rollDungeon()">Generate New Area</button>
+      <div class="result-box" id="dungeonResult">—</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">📖</span> Adventure Log</h2>
+      <p class="desc">Track open threads and the cast of characters. Update these at the end of every scene.</p>
+      <div class="grid2">
+        <div>
+          <label>Open Threads</label>
+          <textarea class="field" id="threadsField" placeholder="e.g. Rescue the fairy queen from the orc warcamp..."></textarea>
+        </div>
+        <div>
+          <label>Cast of Characters</label>
+          <textarea class="field" id="castField" placeholder="e.g. Sir Trent (ally), the Orc Chieftain (foe)..."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATTLE TAB -->
+  <section class="tabpanel" id="tab-battle">
+    <div class="card">
+      <h2><span class="ico">🗡️</span> Enemy Roster</h2>
+      <p class="desc">Track each foe's health and morale. The Oracle uses these to decide what the enemy does next.</p>
+      <div id="enemyList"></div>
+      <button class="action" onclick="addEnemy()">+ Add Enemy</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">🧠</span> Enemy AI — What Does It Do Next?</h2>
+      <p class="desc">Pick the acting enemy (or set health/morale manually), then roll the Enemy Intent table. Lower health and broken morale push the result toward desperation; full health and steady morale push it toward aggression.</p>
+      <div class="row">
+        <div>
+          <label>Acting Enemy</label>
+          <select id="enemyPicker"><option value="">— manual —</option></select>
+        </div>
+        <div>
+          <label>Health (if manual)</label>
+          <select id="manualHealth">
+            <option value="healthy">Healthy (66–100%)</option>
+            <option value="bloodied">Bloodied (33–65%)</option>
+            <option value="critical">Critical (below 33%)</option>
+          </select>
+        </div>
+        <div>
+          <label>Morale (if manual)</label>
+          <select id="manualMorale">
+            <option value="steady">Steady</option>
+            <option value="wavering">Wavering</option>
+            <option value="broken">Broken</option>
+          </select>
+        </div>
+        <div style="flex:0 0 auto;"><button class="action wine big" onclick="rollEnemyIntent()">Roll Intent</button></div>
+      </div>
+      <div class="result-box" id="intentResult">—</div>
+
+      <div class="row" style="margin-top:14px;">
+        <div style="flex:0 0 auto;"><button class="action steel" onclick="rollTarget()">Roll Target Selection (d6)</button></div>
+        <div style="flex:0 0 auto;"><button class="action forest" onclick="rollMorale()">Morale Check</button></div>
+      </div>
+      <div class="result-box" id="targetMoraleResult">—</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">💥</span> Combat Dice</h2>
+      <p class="desc">Quick rolls for the fight: attack rolls, damage, and initiative.</p>
+      <div class="row">
+        <div>
+          <label>Attack Roll (d20 + mod)</label>
+          <div class="row" style="margin:0;">
+            <input type="number" id="atkMod" value="0" style="max-width:80px;">
+            <button class="action" onclick="rollAttack()">Roll Attack</button>
+          </div>
+        </div>
+        <div>
+          <label>Damage (dice + mod)</label>
+          <div class="row" style="margin:0;">
+            <select id="dmgDie">
+              <option value="4">d4</option>
+              <option value="6" selected>d6</option>
+              <option value="8">d8</option>
+              <option value="10">d10</option>
+              <option value="12">d12</option>
+            </select>
+            <input type="number" id="dmgCount" value="1" min="1" style="max-width:60px;">
+            <input type="number" id="dmgMod" value="0" style="max-width:60px;">
+            <button class="action wine" onclick="rollDamage()">Roll Damage</button>
+          </div>
+        </div>
+        <div>
+          <label>Initiative (d20)</label>
+          <button class="action steel" onclick="rollInitiative()">Roll for All</button>
+        </div>
+      </div>
+      <div class="result-box" id="combatDiceResult">—</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="ico">📋</span> Enemy Intent Reference</h2>
+      <table class="ref">
+        <tr><th>Roll (d20 + status mod)</th><th>Intent</th></tr>
+        <tr><td>1 or less</td><td>Flees the battle outright</td></tr>
+        <tr><td>2–4</td><td>Surrenders, bargains, or begs for mercy</td></tr>
+        <tr><td>5–7</td><td>Falls back to a defensible position, fighting cautiously</td></tr>
+        <tr><td>8–9</td><td>Protects or drags a wounded ally to safety</td></tr>
+        <tr><td>10–12</td><td>Holds ground, trades cautious blows</td></tr>
+        <tr><td>13–15</td><td>Attacks the nearest target</td></tr>
+        <tr><td>16–17</td><td>Targets the weakest or most wounded foe</td></tr>
+        <tr><td>18–19</td><td>Uses a special ability, trick, or terrain</td></tr>
+        <tr><td>20–21</td><td>All-out reckless assault</td></tr>
+        <tr><td>22+</td><td>Devastating combo, or calls for reinforcements</td></tr>
+      </table>
+      <p class="meta">Status modifier: Healthy +0, Bloodied −3, Critical −6. Morale modifier: Steady +0, Wavering −3, Broken −7. A total that overflows the table's ends is simply clamped to the nearest listed row.</p>
+    </div>
+  </section>
+
+  <!-- DICE TAB -->
+  <section class="tabpanel" id="tab-dice">
+    <div class="card">
+      <h2><span class="ico">🎲</span> The Dice Tower</h2>
+      <p class="desc">Tap a die to roll it, or set up a custom pool below.</p>
+      <div class="dice-tray">
+        <div class="die-btn" onclick="quickRoll(4)">d4<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(6)">d6<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(8)">d8<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(10)">d10<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(12)">d12<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(20)">d20<small>tap</small></div>
+        <div class="die-btn" onclick="quickRoll(100)">d100<small>tap</small></div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Number of dice</label>
+          <input type="number" id="poolCount" value="1" min="1" max="20">
+        </div>
+        <div>
+          <label>Die size</label>
+          <select id="poolDie">
+            <option value="4">d4</option><option value="6">d6</option><option value="8">d8</option>
+            <option value="10">d10</option><option value="12">d12</option><option value="20" selected>d20</option>
+            <option value="100">d100</option>
+          </select>
+        </div>
+        <div>
+          <label>Modifier</label>
+          <input type="number" id="poolMod" value="0">
+        </div>
+        <div style="flex:0 0 auto;"><button class="action big wine" onclick="rollPool()">Roll Pool</button></div>
+      </div>
+      <div class="result-box" id="poolResult">—</div>
+      <div class="roll-log" id="rollLog"></div>
+    </div>
+  </section>
+
+  <!-- HELP TAB -->
+  <section class="tabpanel" id="tab-help">
+    <div class="card">
+      <h2><span class="ico">📖</span> How to Play Solo</h2>
+      <p class="desc oracle-scroll">1. Create a character with your favorite RPG's rules.
+2. Roll a Plot Hook and set the opening scene.
+3. Ask the Oracle yes/no or how-much questions whenever the story needs an answer only a GM would know. Interpret every result in context — the answer should feel logical, even when it's surprising.
+4. Play out the scene using your game's normal rules for challenges and combat (use the Battle tab for foes).
+5. Use GM Moves to keep the action moving between checks or after a failure.
+6. When the scene ends, adjust the Chaos Factor: raise it after a wild, chaotic scene; lower it after a calm one that went as expected.
+7. Set the next scene and continue.</p>
+    </div>
+    <div class="card">
+      <h2><span class="ico">🔮</span> Reading the Oracle</h2>
+      <p class="desc oracle-scroll">Choose the odds that feel right for your question, then roll. Chaos shifts the odds by 5% per point away from the middle (Chaos 5): higher chaos favors "Yes" and more surprises; lower chaos favors calm, expected outcomes. A roll deep in the top or bottom fifth of the range is an Exceptional result — take it further than a plain yes or no.
+On any double-digit roll (11, 22, 33 … 99) where the repeated digit is at or below the current Chaos Factor, a Random Event has occurred — roll one on the Random Event tool.</p>
+    </div>
+    <div class="card">
+      <h2><span class="ico">⚔️</span> Running the Enemy AI</h2>
+      <p class="desc oracle-scroll">Add each foe to the roster with its starting health. As the fight goes on, adjust health and morale. When it's the enemy's turn and you don't know what it would do, roll Enemy Intent — it reads the creature's condition and hands you a believable action: an unhurt, confident brute fights hard, while a bloodied, wavering coward looks for the exit. Use Target Selection to decide who it goes after, and Morale Check whenever a foe first drops below half health or watches an ally fall.</p>
+    </div>
+    <div class="card">
+      <h2><span class="ico">✒️</span> Sources &amp; Credit</h2>
+      <p class="desc oracle-scroll">The Oracle, Random Event, and Chaos Factor mechanics adapt Tom Pigeon's "Mythic: Game Master Emulator" (Word Mill Publishing). Scene Complications, GM Moves, NPC/Plot Hook/Dungeon generators adapt Karl Hendricks' "One Page Solo Engine" (Inflatable Studios, CC-BY-SA 4.0). The Enemy AI, Battle, and Dice Tower systems are original additions for this tool. Consult the original works for their full rules and licensing.</p>
+    </div>
+  </section>
+
+  <div class="ornament">❦</div>
+  <footer>Made for wandering adventurers who play alone but never truly alone — the Oracle is always listening.</footer>
+</div>
+
+<script>
+/* ---------- Utility ---------- */
+function d(sides){ return Math.floor(Math.random()*sides)+1; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function logRoll(text){
+  const log = document.getElementById('rollLog');
+  const line = document.createElement('div');
+  line.textContent = text;
+  log.prepend(line);
+  while(log.children.length > 40) log.removeChild(log.lastChild);
+}
+
+/* ---------- Chaos Factor ---------- */
+let chaos = 5;
+function renderChaos(){
+  const wrap = document.getElementById('chaosDots');
+  wrap.innerHTML = '';
+  for(let i=1;i<=9;i++){
+    const dot = document.createElement('div');
+    dot.className = 'chaos-dot' + (i<=chaos ? ' filled' : '');
+    dot.textContent = i;
+    dot.onclick = () => { chaos = i; renderChaos(); };
+    wrap.appendChild(dot);
+  }
+  const descs = {
+    1:'Utterly calm. The world behaves. "Yes" answers and surprises are rare.',
+    2:'Quiet waters. Things mostly go as expected.',
+    3:'Settled, but not sleepy. A little unpredictability creeps in.',
+    4:'Balanced, leaning calm.',
+    5:'The default tide of fate — even odds of order and chaos.',
+    6:'Balanced, leaning wild.',
+    7:'Trouble brews. Surprises and "yes" answers come easier.',
+    8:'The world is unraveling. Expect the unexpected, often.',
+    9:'Pure pandemonium. Almost anything can happen, and probably will.'
+  };
+  document.getElementById('chaosDesc').textContent = descs[chaos];
+}
+renderChaos();
+
+/* ---------- Tabs ---------- */
+document.getElementById('tabNav').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('#tabNav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+});
+
+/* ---------- Oracle Yes/No (Fate Chart, chaos-adjusted) ---------- */
+function askOracle(){
+  const base = parseInt(document.getElementById('oddsSelect').value,10);
+  const label = document.getElementById('oddsSelect').selectedOptions[0].text;
+  let percent = base + (chaos-5)*5;
+  const rawPercent = percent;
+  const clamped = Math.max(1, Math.min(99, percent));
+  const excYes = Math.max(1, Math.round(clamped/5));
+  const excNo = Math.min(99, 100 - Math.round((100-clamped)/5));
+  const roll = d(100);
+  let answer, cls;
+  if(roll <= excYes){ answer = 'EXCEPTIONAL YES'; cls='yes exceptional'; }
+  else if(roll <= clamped){ answer = 'YES'; cls='yes'; }
+  else if(roll >= excNo){ answer = 'EXCEPTIONAL NO'; cls='no exceptional'; }
+  else { answer = 'NO'; cls='no'; }
+  if(rawPercent <= 0 && !(roll<=excYes)) answer = 'NO (guaranteed)';
+  if(rawPercent >= 100 && !(roll>=excNo)) answer = 'YES (guaranteed)';
+
+  // random event check: doubles at/under chaos
+  let eventNote = '';
+  if(roll%11===0){
+    const digit = roll/11;
+    if(digit <= chaos){
+      eventNote = '<br><strong>⚡ A Random Event stirs!</strong> (rolled '+roll+', doubles digit '+digit+' ≤ chaos '+chaos+') — draw one from the Random Event tool.';
+    }
+  }
+  document.getElementById('oracleResult').innerHTML =
+    '<div class="big-answer '+cls+'">'+answer+'</div>' +
+    '<div class="meta">Odds: '+label+' · Chaos-adjusted chance: '+clamped+'% (exceptional yes ≤ '+excYes+', exceptional no ≥ '+excNo+') · Rolled '+roll+eventNote+'</div>';
+}
+
+function askHow(){
+  const roll = d(6);
+  const table = {1:'Surprisingly lacking',2:'Less than expected',3:'About average',4:'About average',5:'More than expected',6:'Extraordinary'};
+  document.getElementById('howResult').innerHTML = '<div class="big-answer">'+table[roll]+'</div><div class="meta">Rolled d6: '+roll+'</div>';
+}
+
+/* ---------- Random Event (Mythic) ---------- */
+const EVENT_FOCUS = [
+  {max:7, label:'Remote Event — something happened, but the party only hears of it secondhand'},
+  {max:28, label:'NPC Action — an existing NPC does something unexpected'},
+  {max:35, label:'Introduce a New NPC — a new face enters the story'},
+  {max:45, label:'Move Toward a Thread — a step closer to resolving an open goal'},
+  {max:52, label:'Move Away From a Thread — a setback on an open goal'},
+  {max:55, label:'Close a Thread — an open goal resolves, for good or ill'},
+  {max:67, label:'PC Negative — something bad happens to a player character'},
+  {max:75, label:'PC Positive — something good happens to a player character'},
+  {max:83, label:'Ambiguous Event — atmosphere, a detail, unclear significance'},
+  {max:92, label:'NPC Negative — something bad happens to an NPC'},
+  {max:100, label:'NPC Positive — something good happens to an NPC'}
+];
+const EVENT_ACTION = ["Attainment","Starting","Neglect","Fight","Recruit","Triumph","Violate","Oppose","Malice","Communicate","Persecute","Increase","Decrease","Abandon","Gratify","Inquire","Antagonise","Move","Waste","Truce","Release","Befriend","Judge","Desert","Dominate","Procrastinate","Praise","Separate","Take","Break","Heal","Delay","Stop","Lie","Return","Imitate","Struggle","Inform","Bestow","Postpone","Expose","Haggle","Imprison","Release","Celebrate","Develop","Travel","Block","Harm","Debase","Overindulge","Adjourn","Adversity","Kill","Disrupt","Usurp","Create","Betray","Agree","Abuse","Oppress","Inspect","Ambush","Spy","Attach","Carry","Open","Carelessness","Ruin","Extravagance","Trick","Arrive","Propose","Divide","Refuse","Mistrust","Deceive","Cruelty","Intolerance","Trust","Excitement","Activity","Assist","Care","Negligence","Passion","Work Hard","Control","Attract","Failure","Pursue","Vengeance","Proceedings","Dispute","Punish","Guide","Transform","Overthrow","Betrayal","Change"];
+const EVENT_SUBJECT = ["Goals","Dreams","Environment","Outside","Inside","Reality","Allies","Enemies","Evil","Good","Emotions","Opposition","War","Peace","The Innocent","Love","The Spiritual","The Intellectual","New Ideas","Joy","Messages","Energy","Balance","Tension","Friendship","The Physical","A Project","Pleasures","Pain","Possessions","Benefits","Plans","Lies","Expectations","Legal Matters","Bureaucracy","Business","A Path","News","Exterior Factors","Advice","A Plot","Competition","Prison","Illness","Food","Attention","Success","Failure","Travel","Jealousy","Dispute","Home","Investment","Suffering","Wishes","Tactics","Stalemate","Randomness","Misfortune","Death","Disruption","Power","A Burden","Intrigues","Fears","Ambush","Rumor","Wounds","Extravagance","A Representative","Adversities","Opulence","Liberty","Military","The Mundane","Trials","Masses","A Vehicle","Art","Victory","Dispute","Riches","Status Quo","Technology","Hope","Magic","Illusions","Portals","Danger","Weapons","Animals","Weather","Elements","Nature","The Public","Leadership","Fame","Anger","Information"];
+
+function rollRandomEvent(){
+  const f = d(100);
+  const focus = EVENT_FOCUS.find(e => f <= e.max).label;
+  const a = EVENT_ACTION[d(100)-1];
+  const s = EVENT_SUBJECT[d(100)-1];
+  document.getElementById('eventResult').innerHTML =
+    '<div class="big-answer">'+focus.split(' — ')[0]+'</div>' +
+    '<div>'+focus.split(' — ')[1]+'</div>' +
+    '<div class="meta">Event meaning: <strong>"'+a+' &amp; '+s+'"</strong> — try reading it as "'+a+' of '+s+'." Fit it into your current scene\'s context; if nothing clicks right away, the "I Dunno" rule says assume nothing happened.</div>';
+}
+
+/* ---------- Focus Oracles (card-style, d12 rank + d4 domain) ---------- */
+const ACTION_FOCUS = {2:'Seek',3:'Oppose',4:'Communicate',5:'Move',6:'Harm',7:'Create',8:'Reveal',9:'Command',10:'Take',11:'Protect',12:'Assist',13:'Transform',14:'Deceive'};
+const DETAIL_FOCUS = {2:'Small',3:'Large',4:'Old',5:'New',6:'Mundane',7:'Simple',8:'Complex',9:'Unsavory',10:'Specialized',11:'Unexpected',12:'Exotic',13:'Dignified',14:'Unique'};
+const TOPIC_FOCUS = {2:'Current Need',3:'Allies',4:'Community',5:'History',6:'Future Plans',7:'Enemies',8:'Knowledge',9:'Rumors',10:'A Plot Arc',11:'Recent Events',12:'Equipment',13:'A Faction',14:'The PCs'};
+const DOMAINS = ['Physical (appearance, existence)','Technical (mental, operation)','Mystical (meaning, capability)','Social (personal, connection)'];
+
+function drawCardRank(){
+  // d12 for rank 2-K, on 12(K) flip a coin for Q/K -> we map 2..14 where 11=J,12=Q,13=K,14=A
+  const r = d(12); // 1..12 maps to rank 2..13(K)
+  let rank = r + 1; // 2..13
+  if(rank === 13){ // K rolled, coin flip for Q or K
+    rank = (d(2)===1) ? 12 : 13;
+  }
+  // small chance to bump to Ace(14) using the leftover: reroll style — simple approach, 1/12 chance already covers K; add Ace via d12 roll of 1 twice? Simplify: treat rank 14 as rare bonus
+  return rank;
+}
+function rollFocus(){
+  const which = document.getElementById('focusSelect').value;
+  const table = which==='action'?ACTION_FOCUS : which==='detail'?DETAIL_FOCUS : TOPIC_FOCUS;
+  const rank = drawCardRank();
+  const word = table[rank] || table[13];
+  const domain = pick(DOMAINS);
+  document.getElementById('focusResult').innerHTML =
+    '<div class="big-answer">'+word+'</div><div class="meta">Domain: '+domain+' — combine the two for your interpretation.</div>';
+}
+
+/* ---------- Scene Complication / Altered Scene ---------- */
+function rollComplication(){
+  const trigger = d(6);
+  if(trigger < 5){
+    document.getElementById('complicationResult').innerHTML = '<div class="big-answer yes">Scene proceeds as expected</div><div class="meta">Rolled '+trigger+'/6 — no alteration.</div>';
+    return;
+  }
+  const alt = d(6);
+  const table = {1:'Hostile forces oppose you',2:'An obstacle blocks your way',3:"Wouldn't it suck if…",4:'An NPC acts suddenly',5:'All is not as it seems',6:'Things actually go as planned'};
+  document.getElementById('complicationResult').innerHTML =
+    '<div class="big-answer">Altered Scene: '+table[alt]+'</div><div class="meta">Trigger roll '+trigger+'/6 (5+ alters the scene), complication roll '+alt+'/6.</div>';
+}
+
+function rollMove(kind){
+  const pacing = {1:'Foreshadow Trouble',2:'Reveal a New Detail',3:'An NPC Takes Action',4:'Advance a Threat',5:'Advance a Plot',6:'Add a Random Event to the scene'};
+  const failure = {1:'Cause Harm',2:'Put Someone in a Spot',3:'Offer a Choice',4:'Advance a Threat',5:'Reveal an Unwelcome Truth',6:'Foreshadow Trouble'};
+  const table = kind==='pacing'?pacing:failure;
+  const roll = d(6);
+  document.getElementById('moveResult').innerHTML = '<div class="big-answer">'+table[roll]+'</div><div class="meta">'+(kind==='pacing'?'Pacing':'Failure')+' Move, rolled '+roll+'/6.</div>';
+}
+
+/* ---------- NPC Generator ---------- */
+const IDENTITY = {2:'Outlaw',3:'Drifter',4:'Tradesman',5:'Commoner',6:'Soldier',7:'Merchant',8:'Specialist',9:'Entertainer',10:'Adherent',11:'Leader',12:'Mystic',13:'Adventurer',14:'Lord'};
+const GOAL = {2:'Obtain',3:'Learn',4:'Harm',5:'Restore',6:'Find',7:'Travel',8:'Protect',9:'Enrich Self',10:'Avenge',11:'Fulfill Duty',12:'Escape',13:'Create',14:'Serve'};
+function rollNPC(){
+  const idr = drawCardRank(); const gr = drawCardRank();
+  const identity = IDENTITY[idr] || IDENTITY[13];
+  const goal = GOAL[gr] || GOAL[13];
+  const featureRoll = d(6);
+  const feature = {1:'Unremarkable',2:'Notable nature',3:'Obvious physical trait',4:'Quirk or mannerism',5:'Unusual equipment',6:'Unexpected age or origin'}[featureRoll];
+  const detailRank = drawCardRank();
+  const detailWord = DETAIL_FOCUS[detailRank] || DETAIL_FOCUS[13];
+  document.getElementById('npcResult').innerHTML =
+    '<div class="big-answer">'+identity+' who wants to '+goal.toLowerCase()+'</div>' +
+    '<div class="meta">Notable feature: '+feature+' ('+detailWord+') · Attitude to the party and current topic of conversation can be drawn from the Oracle (How) and Topic Focus tools.</div>';
+}
+
+/* ---------- Plot Hook Generator ---------- */
+function rollPlotHook(){
+  const obj = d(6), adv = d(6), rew = d(6);
+  const objT = {1:'Eliminate a threat',2:'Learn the truth',3:'Recover something valuable',4:'Escort or deliver to safety',5:'Restore something broken',6:'Save an ally in peril'}[obj];
+  const advT = {1:'a powerful organization',2:'outlaws',3:'guardians',4:'local inhabitants',5:'an enemy horde or force',6:'a new or recurring villain'}[adv];
+  const rewT = {1:'money or valuables',2:'money or valuables',3:'knowledge and secrets',4:'the support of an ally',5:'advancement of a plot arc',6:'a unique item of power'}[rew];
+  document.getElementById('hookResult').innerHTML =
+    '<div class="big-answer">'+objT+'</div>' +
+    '<div>Opposed by: '+advT+'</div>' +
+    '<div>Reward: '+rewT+'</div>';
+}
+
+/* ---------- Dungeon Crawler ---------- */
+function rollDungeon(){
+  const loc = d(6), enc = d(6), obj = d(6), exits = d(6);
+  const locT = {1:'A typical area',2:'A transitional area (corridor, stair, bridge)',3:'A living area or meeting place',4:'A working or utility area',5:'An area with a special feature',6:'A location for a specialized purpose'}[loc];
+  const encT = enc<=2?'No one here':enc<=4?'Hostile enemies':enc===5?'An obstacle blocks the way':'A unique NPC or adversary';
+  const objT = obj<=2?'Nothing, or mundane objects':obj===3?'An interesting item or clue':obj===4?'A useful tool, key, or device':obj===5?'Something valuable':'A rare or special item';
+  const exitT = exits<=2?'Dead end':exits<=4?'1 additional exit':'2 additional exits';
+  document.getElementById('dungeonResult').innerHTML =
+    '<div class="big-answer">'+locT+'</div>' +
+    '<div>Encounter: '+encT+'</div>' +
+    '<div>Object: '+objT+'</div>' +
+    '<div>Exits: '+exitT+'</div>';
+}
+
+/* ---------- Enemy Roster ---------- */
+let enemies = [];
+let enemyIdCounter = 1;
+function addEnemy(){
+  enemies.push({id: enemyIdCounter++, name:'New Foe', hp:20, maxHp:20, morale:'steady'});
+  renderEnemies();
+}
+function removeEnemy(id){
+  enemies = enemies.filter(e=>e.id!==id);
+  renderEnemies();
+}
+function renderEnemies(){
+  const list = document.getElementById('enemyList');
+  list.innerHTML = '';
+  enemies.forEach(e=>{
+    const pct = Math.max(0, Math.min(100, Math.round(100*e.hp/e.maxHp)));
+    const div = document.createElement('div');
+    div.className = 'enemy-card';
+    div.innerHTML =
+      '<div class="name-row">' +
+        '<input type="text" value="'+e.name+'" onchange="updateEnemy('+e.id+',\'name\',this.value)">' +
+        '<button class="remove-btn" onclick="removeEnemy('+e.id+')">remove</button>' +
+      '</div>' +
+      '<div class="hp-bar-outer"><div class="hp-bar-inner" style="width:'+pct+'%"></div></div>' +
+      '<div class="enemy-controls">' +
+        'HP <input type="number" value="'+e.hp+'" onchange="updateEnemy('+e.id+',\'hp\',parseInt(this.value)||0)"> / ' +
+        '<input type="number" value="'+e.maxHp+'" onchange="updateEnemy('+e.id+',\'maxHp\',parseInt(this.value)||1)"> ' +
+        '&nbsp;Morale: ' +
+        '<select onchange="updateEnemy('+e.id+',\'morale\',this.value)">' +
+          '<option value="steady"'+(e.morale==='steady'?' selected':'')+'>Steady</option>' +
+          '<option value="wavering"'+(e.morale==='wavering'?' selected':'')+'>Wavering</option>' +
+          '<option value="broken"'+(e.morale==='broken'?' selected':'')+'>Broken</option>' +
+        '</select>' +
+        '&nbsp;<span>('+pct+'% health)</span>' +
+      '</div>';
+    list.appendChild(div);
+  });
+  const picker = document.getElementById('enemyPicker');
+  const prevVal = picker.value;
+  picker.innerHTML = '<option value="">— manual —</option>' + enemies.map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
+  picker.value = enemies.find(e=>String(e.id)===prevVal) ? prevVal : '';
+}
+function updateEnemy(id, field, value){
+  const e = enemies.find(e=>e.id===id);
+  if(!e) return;
+  e[field] = value;
+  renderEnemies();
+}
+// seed with one example enemy
+enemies.push({id:0, name:'Goblin Skirmisher', hp:14, maxHp:14, morale:'steady'});
+enemyIdCounter = 1;
+renderEnemies();
+
+/* ---------- Enemy Intent AI ---------- */
+const INTENT_TABLE = [
+  {max:1, label:'Flees the battle outright'},
+  {max:4, label:'Surrenders, bargains, or begs for mercy'},
+  {max:7, label:'Falls back to a defensible position, fighting cautiously'},
+  {max:9, label:'Protects or drags a wounded ally to safety'},
+  {max:12, label:'Holds ground, trades cautious blows'},
+  {max:15, label:'Attacks the nearest target'},
+  {max:17, label:'Targets the weakest or most wounded foe'},
+  {max:19, label:'Uses a special ability, trick, or the terrain'},
+  {max:21, label:'All-out reckless assault'},
+  {max:999, label:'Devastating combo — or calls for reinforcements'}
+];
+function healthTier(pct){
+  if(pct >= 66) return 'healthy';
+  if(pct >= 33) return 'bloodied';
+  return 'critical';
+}
+function rollEnemyIntent(){
+  const pickerVal = document.getElementById('enemyPicker').value;
+  let health, morale, name;
+  if(pickerVal){
+    const e = enemies.find(e=>String(e.id)===pickerVal);
+    const pct = Math.max(0, Math.min(100, Math.round(100*e.hp/e.maxHp)));
+    health = healthTier(pct);
+    morale = e.morale;
+    name = e.name;
+  } else {
+    health = document.getElementById('manualHealth').value;
+    morale = document.getElementById('manualMorale').value;
+    name = 'The foe';
+  }
+  const healthMod = health==='healthy'?0 : health==='bloodied'?-3 : -6;
+  const moraleMod = morale==='steady'?0 : morale==='wavering'?-3 : -7;
+  const roll = d(20);
+  let total = roll + healthMod + moraleMod;
+  if(total < 1) total = 1;
+  const row = INTENT_TABLE.find(r => total <= r.max);
+  document.getElementById('intentResult').innerHTML =
+    '<div class="big-answer">'+name+': '+row.label+'</div>' +
+    '<div class="meta">d20 roll '+roll+' + health('+health+': '+healthMod+') + morale('+morale+': '+moraleMod+') = '+total+'</div>';
+}
+function rollTarget(){
+  const roll = d(6);
+  const table = {1:'Nearest PC',2:'Nearest PC',3:'Weakest or most wounded PC',4:'Weakest or most wounded PC',5:'The spellcaster or support character',6:'Whoever struck it last'};
+  document.getElementById('targetMoraleResult').innerHTML = '<div class="big-answer">Target: '+table[roll]+'</div><div class="meta">Rolled d6: '+roll+'</div>';
+}
+function rollMorale(){
+  const roll = d(20);
+  let result;
+  if(roll <= 5) result = 'Breaks — flees or surrenders next chance it gets';
+  else if(roll <= 12) result = 'Shaken — morale drops one step (Steady→Wavering→Broken)';
+  else result = 'Holds — keeps fighting as before';
+  document.getElementById('targetMoraleResult').innerHTML =
+    document.getElementById('targetMoraleResult').innerHTML +
+    '<div class="big-answer" style="margin-top:8px;">Morale Check: '+result+'</div><div class="meta">Rolled d20: '+roll+'</div>';
+}
+
+/* ---------- Combat Dice ---------- */
+function rollAttack(){
+  const mod = parseInt(document.getElementById('atkMod').value,10)||0;
+  const roll = d(20);
+  const total = roll + mod;
+  const crit = roll===20?' — CRITICAL HIT!' : roll===1?' — CRITICAL FUMBLE!' : '';
+  document.getElementById('combatDiceResult').innerHTML = '<div class="big-answer">Attack: '+total+'</div><div class="meta">d20 ('+roll+') + mod ('+mod+')'+crit+'</div>';
+  logRoll('Attack roll: d20 '+roll+' + '+mod+' = '+total+crit);
+}
+function rollDamage(){
+  const die = parseInt(document.getElementById('dmgDie').value,10);
+  const count = Math.max(1, parseInt(document.getElementById('dmgCount').value,10)||1);
+  const mod = parseInt(document.getElementById('dmgMod').value,10)||0;
+  let rolls = []; let sum=0;
+  for(let i=0;i<count;i++){ const r=d(die); rolls.push(r); sum+=r; }
+  const total = sum+mod;
+  document.getElementById('combatDiceResult').innerHTML = '<div class="big-answer">Damage: '+total+'</div><div class="meta">'+count+'d'+die+' ['+rolls.join(', ')+'] + '+mod+'</div>';
+  logRoll('Damage: '+count+'d'+die+' ['+rolls.join(',')+'] + '+mod+' = '+total);
+}
+function rollInitiative(){
+  if(enemies.length===0){
+    document.getElementById('combatDiceResult').innerHTML = 'Add enemies to the roster first, or roll individually with the Dice Tower.';
+    return;
+  }
+  const results = enemies.map(e=>({name:e.name, roll:d(20)})).sort((a,b)=>b.roll-a.roll);
+  document.getElementById('combatDiceResult').innerHTML =
+    '<div class="big-answer">Initiative Order</div>' +
+    '<div>'+results.map(r=>r.name+': '+r.roll).join(' → ')+'</div>';
+}
+
+/* ---------- Dice Tower ---------- */
+function quickRoll(sides){
+  const r = d(sides);
+  document.getElementById('poolResult').innerHTML = '<div class="big-answer">d'+sides+': '+r+'</div>';
+  logRoll('d'+sides+' → '+r);
+}
+function rollPool(){
+  const count = Math.max(1, parseInt(document.getElementById('poolCount').value,10)||1);
+  const sides = parseInt(document.getElementById('poolDie').value,10);
+  const mod = parseInt(document.getElementById('poolMod').value,10)||0;
+  let rolls=[]; let sum=0;
+  for(let i=0;i<count;i++){ const r=d(sides); rolls.push(r); sum+=r; }
+  const total = sum+mod;
+  document.getElementById('poolResult').innerHTML =
+    '<div class="big-answer">Total: '+total+'</div><div class="meta">'+count+'d'+sides+' ['+rolls.join(', ')+'] + '+mod+'</div>';
+  logRoll(count+'d'+sides+' ['+rolls.join(',')+'] + '+mod+' = '+total);
+}
+</script>
+</body>
+</html>
