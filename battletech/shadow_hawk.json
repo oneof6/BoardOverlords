@@ -1,0 +1,268 @@
+{
+  "id": "unit_shd2h_shadowhawk",
+  "schemaVersion": 1,
+  "name": "Shadow Hawk",
+  "variant": "SHD-2H",
+  "kind": "BattleMech",
+  "faction": "Inner Sphere (Star League / general)",
+  "era": "Star League (intro 2550)",
+  "techBase": "Inner Sphere",
+  "tonnage": 55,
+  "role": "Skirmisher",
+  "demo": false,
+  "source": {
+    "dataSourceId": "ds-user",
+    "note": "Sarna.net (general, BV, weapons, ammo, quirks); Master Unit List (Alpha Strike PV 30, size 2, 10\"/6\"j, TMM 2, A5/S5, 2/2/1/0, IF 0*, JMPW 1, BV 1,064). NOT found online in this search: per-location armor split and crit-slot layout - these were filled from standard 55t rules (internal structure) and TRO:3025-style recollection (armor split, total 152 = 9.5 t); verify against the official record sheet."
+  },
+  "createdAt": "2026-10-09T10:45:00.000Z",
+  "updatedAt": "2026-10-09T10:45:00.000Z",
+  "alphaStrike": {
+    "type": "BM",
+    "size": 2,
+    "move": [
+      {
+        "inches": 10,
+        "mode": ""
+      },
+      {
+        "inches": 6,
+        "mode": "j"
+      }
+    ],
+    "role": "Skirmisher",
+    "damage": {
+      "s": 2,
+      "m": 2,
+      "l": 1,
+      "e": null
+    },
+    "ov": 0,
+    "armor": 5,
+    "structure": 5,
+    "pv": 30,
+    "specials": [
+      "IF0*",
+      "JMPW1"
+    ],
+    "tmm": 2,
+    "skill": 4
+  },
+  "classic": {
+    "tonnage": 55,
+    "techBase": "Inner Sphere",
+    "walk": 5,
+    "run": 8,
+    "jump": 5,
+    "heatSinks": 12,
+    "heatSinkType": "single",
+    "dissipation": 12,
+    "armor": {
+      "HD": 9,
+      "CT": 23,
+      "LT": 17,
+      "RT": 17,
+      "LA": 14,
+      "RA": 14,
+      "LL": 21,
+      "RL": 21,
+      "CTR": 6,
+      "LTR": 5,
+      "RTR": 5
+    },
+    "internal": {
+      "HD": 3,
+      "CT": 18,
+      "LT": 13,
+      "RT": 13,
+      "LA": 9,
+      "RA": 9,
+      "LL": 13,
+      "RL": 13
+    },
+    "weapons": [
+      {
+        "id": "w1",
+        "name": "Autocannon/5",
+        "loc": "LT",
+        "heat": 1,
+        "damage": 5,
+        "min": 0,
+        "short": 6,
+        "medium": 12,
+        "long": 18,
+        "cluster": false,
+        "ammoKey": "AC5",
+        "rear": false,
+        "slots": 4
+      },
+      {
+        "id": "w2",
+        "name": "LRM 5",
+        "loc": "LT",
+        "heat": 2,
+        "damage": 5,
+        "min": 6,
+        "short": 7,
+        "medium": 14,
+        "long": 21,
+        "cluster": true,
+        "ammoKey": "LRM5",
+        "rear": false,
+        "slots": 1
+      },
+      {
+        "id": "w3",
+        "name": "SRM 2",
+        "loc": "HD",
+        "heat": 2,
+        "damage": 2,
+        "min": 0,
+        "short": 3,
+        "medium": 6,
+        "long": 9,
+        "cluster": true,
+        "ammoKey": "SRM2",
+        "rear": false,
+        "slots": 1
+      },
+      {
+        "id": "w4",
+        "name": "Medium Laser",
+        "loc": "RA",
+        "heat": 3,
+        "damage": 5,
+        "min": 0,
+        "short": 3,
+        "medium": 6,
+        "long": 9,
+        "cluster": false,
+        "ammoKey": null,
+        "rear": false,
+        "slots": 1
+      }
+    ],
+    "ammo": [
+      {
+        "key": "AC5",
+        "name": "AC/5 Ammo",
+        "loc": "LT",
+        "shots": 20
+      },
+      {
+        "key": "LRM5",
+        "name": "LRM 5 Ammo",
+        "loc": "RT",
+        "shots": 24
+      },
+      {
+        "key": "SRM2",
+        "name": "SRM 2 Ammo",
+        "loc": "RT",
+        "shots": 50
+      }
+    ],
+    "crits": {
+      "HD": [
+        "Life Support",
+        "Sensors",
+        "Cockpit",
+        "SRM 2",
+        "Sensors",
+        "Life Support"
+      ],
+      "CT": [
+        "Engine",
+        "Engine",
+        "Engine",
+        "Gyro",
+        "Gyro",
+        "Gyro",
+        "Gyro",
+        "Engine",
+        "Engine",
+        "Engine",
+        "Jump Jet",
+        "—"
+      ],
+      "LT": [
+        "Autocannon/5",
+        "Autocannon/5",
+        "Autocannon/5",
+        "Autocannon/5",
+        "AC/5 Ammo",
+        "LRM 5",
+        "Jump Jet",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—"
+      ],
+      "RT": [
+        "LRM 5 Ammo",
+        "SRM 2 Ammo",
+        "Jump Jet",
+        "Heat Sink",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—"
+      ],
+      "LA": [
+        "Shoulder",
+        "Upper Arm Actuator",
+        "Lower Arm Actuator",
+        "Hand Actuator",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—"
+      ],
+      "RA": [
+        "Shoulder",
+        "Upper Arm Actuator",
+        "Lower Arm Actuator",
+        "Hand Actuator",
+        "Medium Laser",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—"
+      ],
+      "LL": [
+        "Hip",
+        "Upper Leg Actuator",
+        "Lower Leg Actuator",
+        "Foot Actuator",
+        "—",
+        "—"
+      ],
+      "RL": [
+        "Hip",
+        "Upper Leg Actuator",
+        "Lower Leg Actuator",
+        "Foot Actuator",
+        "—",
+        "—"
+      ]
+    },
+    "equipment": [
+      "Jump Jets x3",
+      "Quirks: Battlefists, Improved Life Support, Rugged (1), Ubiquitous"
+    ],
+    "gunnery": 4,
+    "piloting": 5,
+    "bv": 1064
+  }
+}

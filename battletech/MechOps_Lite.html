@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MechOps Lite</title>
+<style>
+:root{--bg:#14171c;--panel:#1d222a;--panel2:#252b35;--line:#343c49;--fg:#e6e9ee;--mut:#8c96a5;--acc:#e0a526;--pl:#4aa3df;--en:#e0584a;--ok:#4cbf7a;--arm:#5b9bd5;--str:#d9863a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header h1{font-size:16px;margin:0 12px 0 0;color:var(--acc);letter-spacing:.5px}
+button,select,input,textarea{font:inherit;color:var(--fg);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+button.pri{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}
+button.sm{padding:2px 7px;font-size:12px}
+input[type=number]{width:64px}
+main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px;max-width:1500px;margin:auto}
+@media(max-width:1000px){main{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+section h2{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.side-P h2 span.t{color:var(--pl)}.side-E h2 span.t{color:var(--en)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.card{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:8px}
+.card.P{border-left-color:var(--pl)}.card.E{border-left-color:var(--en)}
+.card.dead{opacity:.45}.card.acted{outline:1px dashed var(--mut)}
+.card .nm{font-weight:700}.card .sub{color:var(--mut);font-size:12px}
+.stats{display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 0;font-size:12px}
+.stats b{color:var(--acc)}
+.pips{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0;align-items:center}
+.pip{width:14px;height:14px;border-radius:3px;border:1px solid #000;cursor:pointer}
+.pip.a{background:var(--arm)}.pip.s{background:var(--str)}.pip.off{background:#0c0e11;border-color:var(--line)}
+.lbl{font-size:11px;color:var(--mut);width:34px}
+.tag{display:inline-block;padding:0 6px;border-radius:9px;background:#3a2222;color:#ffb3a8;font-size:11px;margin-right:3px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
+.row label{color:var(--mut);font-size:12px}
+.big{font-size:22px;font-weight:700}
+.aicard{background:#101319;border:2px solid var(--acc);border-radius:10px;padding:10px;margin-top:6px}
+.aicard h3{margin:0;color:var(--acc)}
+.aicard .k{color:var(--mut);font-size:11px;text-transform:uppercase;margin-top:6px}
+.log{max-height:240px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:#0e1115;border-radius:6px;padding:6px}
+.log div{padding:1px 0;border-bottom:1px solid #1a1f27}
+.hit{color:var(--ok)}.miss{color:var(--en)}
+dialog{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;max-width:560px;width:92%}
+dialog::backdrop{background:#000a}
+.muted{color:var(--mut);font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+textarea{width:100%;min-height:140px;font-family:ui-monospace,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>MECHOPS LITE</h1>
+  <button id="bInit">Initiative</button>
+  <button id="bNext">Next turn</button>
+  <span id="turnLbl" class="muted"></span>
+  <span style="flex:1"></span>
+  <button id="bExp">Export</button>
+  <button id="bImpSave">Import save</button>
+  <button id="bReset">New battle</button>
+  <span id="saveLbl" class="muted"></span>
+  <input type="file" id="fileSave" accept=".json" hidden>
+  <input type="file" id="fileUnit" accept=".json" multiple hidden>
+</header>
+
+<main>
+  <section class="side-P"><h2><span class="t">Your force</span><span><button class="sm" data-add="P">+ Unit</button> <button class="sm" data-imp="P">Import JSON</button></span></h2><div class="muted" id="ptP"></div><div class="cards" id="cardsP"></div></section>
+  <section class="side-E"><h2><span class="t">Enemy force</span><span><button class="sm" data-add="E">+ Unit</button> <button class="sm" data-imp="E">Import JSON</button></span></h2><div class="muted" id="ptE"></div><div class="cards" id="cardsE"></div></section>
+
+  <section>
+    <h2><span>Attack roll</span><button class="sm" id="bRoll2">Roll 2D6</button></h2>
+    <div class="grid2">
+      <div class="row"><label>Attacker</label><select id="atk"></select></div>
+      <div class="row"><label>Target</label><select id="tgt"></select></div>
+      <div class="row"><label>Range (inches)</label><input type="number" id="rng" value="6" min="0"></div>
+      <div class="row"><label>Attacker moved</label><select id="amv"><option value="0">Stood still (+0)</option><option value="1" selected>Moved (+1)</option><option value="2">Jumped (+2)</option></select></div>
+      <div class="row"><label>Other modifier</label><input type="number" id="oth" value="0"><span class="muted">cover, woods, etc.</span></div>
+      <div class="row"><label>Overheat used</label><input type="number" id="ovu" value="0" min="0"></div>
+    </div>
+    <div id="tnInfo" class="muted" style="margin:6px 0"></div>
+    <div class="row"><button class="pri" id="bAtk">Roll to hit</button><span id="atkRes" class="big"></span></div>
+    <div class="row"><button id="bApply" disabled>Apply damage</button><span class="muted" id="applyInfo"></span></div>
+  </section>
+
+  <section>
+    <h2><span>Enemy AI deck</span><span><span class="muted" id="deckInfo"></span> <button class="sm" id="bShuf">Shuffle</button></span></h2>
+    <div class="row"><label>For unit</label><select id="aiUnit"></select><button class="pri" id="bDraw">Draw card</button></div>
+    <div id="aiOut" class="muted">Draw a card to see the enemy unit's orders.</div>
+  </section>
+
+  <section style="grid-column:1/-1">
+    <h2><span>Log</span><span><button class="sm" id="bClrLog">Clear</button></span></h2>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<dialog id="dlgAdd">
+  <h3 style="margin-top:0">Add unit</h3>
+  <div class="grid2">
+    <div class="row"><label>Name</label><input id="aName" placeholder="Shadow Hawk SHD-2H"></div>
+    <div class="row"><label>PV</label><input type="number" id="aPv" value="30"></div>
+    <div class="row"><label>Size</label><input type="number" id="aSize" value="2" min="1" max="4"></div>
+    <div class="row"><label>TMM</label><input type="number" id="aTmm" value="2"></div>
+    <div class="row"><label>Move (inches)</label><input type="number" id="aMv" value="10"></div>
+    <div class="row"><label>Jump (inches)</label><input type="number" id="aJmp" value="0"></div>
+    <div class="row"><label>Armor</label><input type="number" id="aArm" value="5"></div>
+    <div class="row"><label>Structure</label><input type="number" id="aStr" value="5"></div>
+    <div class="row"><label>Dmg S / M / L</label><span><input type="number" id="aS" value="2" style="width:48px"> <input type="number" id="aM" value="2" style="width:48px"> <input type="number" id="aL" value="1" style="width:48px"></span></div>
+    <div class="row"><label>OV</label><input type="number" id="aOv" value="0"></div>
+    <div class="row"><label>Skill</label><input type="number" id="aSk" value="4"></div>
+    <div class="row"><label>Role</label><input id="aRole" placeholder="Skirmisher"></div>
+  </div>
+  <div class="row"><label>Specials</label><input id="aSp" style="flex:1" placeholder="IF0*, JMPW1"></div>
+  <div class="row" style="justify-content:flex-end"><button id="aCancel">Cancel</button><button class="pri" id="aOk">Add</button></div>
+</dialog>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const d6=()=>1+Math.floor(Math.random()*6), r2=()=>{const a=d6(),b=d6();return {a,b,t:a+b}};
+const uid=()=>'u'+Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='mechops-lite-v1';
+
+/* ---------- state ---------- */
+let S={units:[],turn:1,init:null,deck:{draw:[],disc:[]},log:[],pending:null};
+function fresh(){return {units:[],turn:1,init:null,deck:{draw:[],disc:[]},log:[],pending:null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));$('#saveLbl').textContent='saved '+new Date().toLocaleTimeString()}catch(e){$('#saveLbl').textContent='autosave unavailable - use Export'}}
+function load(){try{const j=localStorage.getItem(KEY);if(j){S=Object.assign(fresh(),JSON.parse(j))}}catch(e){}}
+function log(msg,cls){S.log.unshift({m:msg,c:cls||''});S.log=S.log.slice(0,200);}
+
+/* ---------- AI deck (original, house-made behavior cards) ---------- */
+/* Each card: name, move order, fire order, target priority; "hurt" = alternative when unit has <=50% armor+structure left. */
+const AI=[
+ {n:'Press the Attack',mv:'Move toward the nearest enemy; end in short range if possible.',fi:'Fire everything; use full OV if heat is 0-1.',tg:'closest',hurt:'Move toward cover while still closing; fire without OV.'},
+ {n:'Hold and Shoot',mv:'Do not move (or move 1/2 speed to better LOS).',fi:'Fire at best range band available.',tg:'weakest',hurt:'Same, but never use OV.'},
+ {n:'Flank',mv:'Move to the enemy flank / far edge, staying at medium range or beyond.',fi:'Fire only if a target is within medium range.',tg:'closest',hurt:'Move away from nearest enemy and fire if able.'},
+ {n:'Focus Fire',mv:'Move toward the most damaged enemy.',fi:'Fire at that enemy; use OV to finish it.',tg:'weakest',hurt:'Fire without OV; stay at max range.'},
+ {n:'Go for the Big One',mv:'Approach the highest-PV enemy.',fi:'Fire at it at the best damage band.',tg:'highestPV',hurt:'Hold position and fire at the closest instead.'},
+ {n:'Cautious Advance',mv:'Move 1/2 speed toward the nearest enemy, preferring cover.',fi:'Fire at nearest in range.',tg:'closest',hurt:'Do not advance; fire if in range.'},
+ {n:'Fighting Withdrawal',mv:'Retreat full speed toward own board edge, facing the enemy.',fi:'Fire at nearest in range, no OV.',tg:'closest',hurt:'Retreat full speed; no firing if it would run hot.'},
+ {n:'Brawl',mv:'Close to base contact if possible.',fi:'Fire at the adjacent / nearest enemy; make a physical attack if in contact.',tg:'closest',hurt:'Stay at short range instead of contact; fire.'},
+ {n:'Ambush Position',mv:'Move to the nearest cover or high ground, then stop.',fi:'Fire at the first enemy in medium range or closer.',tg:'closest',hurt:'Same, and hold until enemy is within short range.'},
+ {n:'Opportunist',mv:'Move toward the nearest objective; ignore enemies unless blocked.',fi:'Fire at any enemy within short range.',tg:'closest',hurt:'Take cover and fire only when enemy is in short range.'},
+ {n:'Suppressing Fire',mv:'Hold position or advance 1/2 speed.',fi:'Fire at the largest-Size enemy at long range if possible.',tg:'highestPV',hurt:'Do not advance; fire at nearest.'},
+ {n:'Reckless Charge',mv:'Run straight at the nearest enemy at full speed.',fi:'Fire everything with maximum OV.',tg:'closest',hurt:'Charge anyway, but no OV.'},
+ {n:'Lance Cohesion',mv:'Move toward the nearest friendly unit, then toward the enemy.',fi:'Fire at the same target as the nearest friendly if possible.',tg:'weakest',hurt:'Stay within 6" of a friendly; fire at nearest.'},
+ {n:'Stalk the Wounded',mv:'Pursue the enemy with least armor+structure left.',fi:'Fire at it at any range.',tg:'weakest',hurt:'Hold; fire at the weakest in range.'},
+ {n:'Cool Down',mv:'Move 1/2 speed or stand still.',fi:'If heat >= 2, do not fire. Otherwise fire without OV.',tg:'closest',hurt:'Stand still; fire only if heat is 0.'},
+ {n:'Skirmish Dance',mv:'Move so you end at medium range from the nearest enemy.',fi:'Fire at nearest enemy in range.',tg:'closest',hurt:'End at long range from nearest enemy; fire.'}
+];
+const TGT={closest:'Closest enemy (you decide by board distance)',weakest:'Enemy with least armor+structure left',highestPV:'Enemy with highest PV'};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function newDeck(){S.deck={draw:shuffle(AI.map((_,i)=>i)),disc:[]}}
+function drawCard(){ if(!S.deck.draw.length){ if(!S.deck.disc.length)newDeck(); else {S.deck.draw=shuffle(S.deck.disc);S.deck.disc=[]; log('AI deck reshuffled.')}} const i=S.deck.draw.pop(); S.deck.disc.push(i); return i }
+
+/* ---------- unit logic ---------- */
+function mk(o,side){
+  const A=o.armor??1,St=o.structure??1;
+  return {id:uid(),side,name:o.name||'Unit',pv:o.pv||0,size:o.size||1,tmm:o.tmm??0,
+    moves:o.moves||[{inches:6,mode:''}],dmg:{s:o.dmg?.s||0,m:o.dmg?.m||0,l:o.dmg?.l||0,e:o.dmg?.e||0},ov:o.ov||0,
+    armor:A,structure:St,aLeft:A,sLeft:St,heat:0,skill:o.skill??4,role:o.role||'',specials:o.specials||[],
+    crit:{fc:0,mp:0,wp:0,eng:0},dead:false,acted:false};
+}
+function fromImport(j,side){
+  const a=j.alphaStrike||j; if(!a||a.armor==null){throw new Error('no alphaStrike block')}
+  const name=((j.name||a.name||'Unit')+(j.variant?' '+j.variant:'')).trim();
+  return mk({name,pv:a.pv,size:a.size,tmm:a.tmm,moves:(a.move||[]).map(m=>({inches:m.inches,mode:m.mode||''})),dmg:{s:a.damage?.s,m:a.damage?.m,l:a.damage?.l,e:a.damage?.e},ov:a.ov,armor:a.armor,structure:a.structure,skill:a.skill,role:a.role||j.role,specials:a.specials||[]},side);
+}
+const U=id=>S.units.find(u=>u.id===id);
+function effMoves(u){
+  const pen=(u.heat>0?u.heat*2:0);
+  return u.moves.map(m=>{let v=m.inches;for(let i=0;i<u.crit.mp;i++)v=Math.floor(v/2);v=Math.max(0,v-(m.mode==='j'?0:pen));return v+'"'+(m.mode||'')}).join('/');
+}
+function effDmg(u,band){let v=u.dmg[band]||0;v=Math.max(0,v-u.crit.wp);return v}
+function bandOf(r){return r<=6?'s':r<=12?'m':r<=20?'l':r<=30?'e':null}
+function health(u){return (u.aLeft+u.sLeft)/(u.armor+u.structure)}
+
+/* critical hit table (simplified, editable: check against your rulebook) */
+function critRoll(u){
+  const r=r2().t;let t;
+  if(r===2)t='AMMO hit - unit destroyed unless it has ENE / CASE';
+  else if(r===3){u.crit.eng++;t='ENGINE hit (+1 heat each End Phase; 2nd hit destroys)'; if(u.crit.eng>=2){u.dead=true}}
+  else if(r===4||r===10){u.crit.fc++;t='FIRE CONTROL hit (+2 to-hit each)'}
+  else if(r===5||r===9){u.crit.wp++;t='WEAPONS hit (-1 damage at all ranges)'}
+  else if(r===6||r===8){u.crit.mp++;t='MOVEMENT hit (move halved)'}
+  else if(r===7)t='no critical effect';
+  else if(r===11){u.crit.eng++;t='ENGINE hit'; if(u.crit.eng>=2)u.dead=true}
+  else {u.dead=true;t='UNIT DESTROYED'}
+  if(r===2)u.dead=true;
+  log(`CRIT ${u.name}: 2D6=${r} -> ${t}`,'miss');
+  return t;
+}
+function applyDamage(u,dmg){
+  let rem=dmg,sInfo='';
+  const fromA=Math.min(rem,u.aLeft);u.aLeft-=fromA;rem-=fromA;
+  const fromS=Math.min(rem,u.sLeft);u.sLeft-=fromS;
+  if(fromS>0){ sInfo=' '+critRoll(u) }
+  if(u.sLeft<=0&&!u.dead){u.dead=true;log(`${u.name} destroyed.`,'miss')}
+  return {fromA,fromS,sInfo};
+}
+
+/* ---------- rendering ---------- */
+function pipRow(u,kind){
+  const max=kind==='a'?u.armor:u.structure,left=kind==='a'?u.aLeft:u.sLeft;let h='';
+  for(let i=0;i<max;i++)h+=`<span class="pip ${i<left?kind:'off'}" data-pip="${u.id}:${kind}:${i}"></span>`;
+  return `<div class="pips"><span class="lbl">${kind==='a'?'Armor':'Struct'}</span>${h}</div>`;
+}
+function cardHtml(u){
+  const tags=['fc','mp','wp','eng'].filter(k=>u.crit[k]).map(k=>`<span class="tag">${{fc:'FC',mp:'MP',wp:'WPN',eng:'ENG'}[k]}${u.crit[k]>1?'x'+u.crit[k]:''}</span>`).join('');
+  return `<div class="card ${u.side} ${u.dead?'dead':''} ${u.acted?'acted':''}">
+   <div class="row" style="justify-content:space-between;margin:0"><span class="nm">${esc(u.name)}</span><span><button class="sm" data-act="${u.id}" title="Mark activated">${u.acted?'done':'act'}</button> <button class="sm" data-del="${u.id}" title="Remove">x</button></span></div>
+   <div class="sub">${esc(u.role)} - PV ${u.pv} - Size ${u.size}</div>
+   <div class="stats"><span>Move <b>${effMoves(u)}</b></span><span>TMM <b>${u.tmm}</b></span><span>S/M/L <b>${effDmg(u,'s')}/${effDmg(u,'m')}/${effDmg(u,'l')}</b></span><span>OV <b>${u.ov}</b></span><span>Skill <b>${u.skill}</b></span></div>
+   ${pipRow(u,'a')}${pipRow(u,'s')}
+   <div class="row" style="margin:2px 0"><span class="lbl">Heat</span><button class="sm" data-heat="${u.id}:-1">-</button><b>${u.heat}</b><button class="sm" data-heat="${u.id}:1">+</button> ${tags}</div>
+   <div class="muted">${esc((u.specials||[]).join(', '))}</div>
+  </div>`;
+}
+function render(){
+  for(const s of ['P','E']){
+    const us=S.units.filter(u=>u.side===s);
+    $('#cards'+s).innerHTML=us.map(cardHtml).join('')||'<div class="muted">No units. Add or import one.</div>';
+    const alive=us.filter(u=>!u.dead);
+    $('#pt'+s).textContent=`${alive.length}/${us.length} units active - ${alive.reduce((a,u)=>a+u.pv,0)} PV on the table`;
+  }
+  const opt=(list)=>list.map(u=>`<option value="${u.id}">${esc(u.name)}${u.dead?' (dead)':''}</option>`).join('');
+  const keep=[['#atk'],['#tgt'],['#aiUnit']].map(([s])=>$(s).value);
+  $('#atk').innerHTML=opt(S.units);$('#tgt').innerHTML=opt(S.units);$('#aiUnit').innerHTML=opt(S.units.filter(u=>u.side==='E'&&!u.dead));
+  [['#atk'],['#tgt'],['#aiUnit']].forEach(([s],i)=>{if(keep[i]&&$(s).querySelector(`option[value="${keep[i]}"]`))$(s).value=keep[i]});
+  $('#turnLbl').textContent=`Turn ${S.turn}`+(S.init?` - ${S.init}`:'');
+  $('#deckInfo').textContent=`${S.deck.draw.length} in deck / ${S.deck.disc.length} discarded`;
+  $('#log').innerHTML=S.log.map(l=>`<div class="${l.c}">${esc(l.m)}</div>`).join('');
+  tnPreview();
+  save();
+}
+
+/* ---------- attack ---------- */
+function tnCalc(){
+  const a=U($('#atk').value),t=U($('#tgt').value);if(!a||!t)return null;
+  const rng=+$('#rng').value||0,band=bandOf(rng);if(!band)return {a,t,band:null};
+  const parts=[['Skill',a.skill],['Attacker movement',+$('#amv').value],['Target TMM',t.tmm],['Range '+band.toUpperCase(),{s:0,m:2,l:4,e:6}[band]]];
+  if(a.heat)parts.push(['Heat',a.heat]);
+  if(a.crit.fc)parts.push(['Fire control',2*a.crit.fc]);
+  if(+$('#oth').value)parts.push(['Other',+$('#oth').value]);
+  const tn=parts.reduce((s,p)=>s+p[1],0);
+  const dmg=effDmg(a,band==='e'?'e':band);
+  return {a,t,band,parts,tn,dmg};
+}
+function tnPreview(){
+  const c=tnCalc();const el=$('#tnInfo');
+  if(!c){el.textContent='Add units to both sides first.';return}
+  if(!c.band){el.textContent='Out of range (max 30").';return}
+  const p=Math.round((c.tn<=2?36:c.tn>12?0:[0,0,36,35,33,30,26,21,15,10,6,3,1][c.tn])/36*100);
+  el.innerHTML=`Target number <b>${c.tn}</b> (${c.parts.map(x=>x[0]+' '+(x[1]>=0?'+':'')+x[1]).join(', ')}) - roughly ${p}% to hit - damage <b>${c.dmg}</b>${+$('#ovu').value?' + OV '+(+$('#ovu').value):''}`;
+}
+function doAttack(){
+  const c=tnCalc();if(!c||!c.band){return}
+  if(c.a.dead){log(`${c.a.name} is destroyed and cannot attack.`);render();return}
+  const r=r2(),ovu=Math.min(+$('#ovu').value||0,c.a.ov);
+  const hit=r.t>=c.tn,dmg=c.dmg+ (c.dmg>0?ovu:0);
+  $('#atkRes').innerHTML=`<span class="${hit?'hit':'miss'}">${r.a}+${r.b}=${r.t} vs ${c.tn}: ${hit?'HIT':'MISS'}</span>`;
+  log(`${c.a.name} -> ${c.t.name} @${$('#rng').value}" ${c.band.toUpperCase()}: 2D6=${r.t} vs TN ${c.tn} -> ${hit?'HIT for '+dmg:'miss'}${ovu?' (OV '+ovu+')':''}`,hit?'hit':'miss');
+  if(ovu)c.a.heat+=ovu;
+  S.pending=hit&&dmg>0?{t:c.t.id,dmg}:null;
+  $('#bApply').disabled=!S.pending;$('#applyInfo').textContent=S.pending?`Apply ${dmg} damage to ${c.t.name}`:'';
+  render();
+}
+function doApply(){
+  const p=S.pending;if(!p)return;const t=U(p.t);if(!t)return;
+  const r=applyDamage(t,p.dmg);
+  log(`${t.name} takes ${p.dmg}: ${r.fromA} armor, ${r.fromS} structure.`,'hit');
+  S.pending=null;$('#bApply').disabled=true;$('#applyInfo').textContent='';render();
+}
+
+/* ---------- AI draw ---------- */
+function doDraw(){
+  const u=U($('#aiUnit').value);if(!u){$('#aiOut').textContent='No living enemy unit.';return}
+  const c=AI[drawCard()],hurt=health(u)<=0.5;
+  const mv=hurt?c.hurt:c.mv;
+  const players=S.units.filter(x=>x.side==='P'&&!x.dead);
+  let tgtTxt=TGT[c.tg];
+  if(c.tg==='weakest'&&players.length){const w=[...players].sort((a,b)=>(a.aLeft+a.sLeft)-(b.aLeft+b.sLeft))[0];tgtTxt+=` -> ${w.name}`}
+  if(c.tg==='highestPV'&&players.length){const w=[...players].sort((a,b)=>b.pv-a.pv)[0];tgtTxt+=` -> ${w.name}`}
+  $('#aiOut').innerHTML=`<div class="aicard"><h3>${esc(c.n)}</h3><div class="muted">for ${esc(u.name)} - ${hurt?'DAMAGED (<=50%) variant':'normal condition'}</div>
+   <div class="k">Movement</div>${esc(mv)}<div class="k">Fire</div>${esc(hurt&&c.hurt&&c.hurt.includes('no OV')?c.fi:c.fi)}<div class="k">Target</div>${esc(tgtTxt)}
+   <div class="k">Unit state</div>Heat ${u.heat} - Move ${effMoves(u)} - OV ${u.ov}${u.heat>=3?' - <b>very hot: consider standing still</b>':''}</div>`;
+  log(`AI card for ${u.name}: ${c.n}${hurt?' (damaged)':''}`);render();
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset.pip){const[id,k,i]=t.dataset.pip.split(':');const u=U(id);const left=k==='a'?u.aLeft:u.sLeft;const n=+i;
+    const nv=(left>n)?n:n+1; if(k==='a')u.aLeft=nv;else{u.sLeft=nv;} if(u.sLeft<=0)u.dead=true;else if(u.dead&&u.sLeft>0)u.dead=false;render()}
+  else if(t.dataset.heat){const[id,d]=t.dataset.heat.split(':');const u=U(id);u.heat=Math.max(0,u.heat+(+d));render()}
+  else if(t.dataset.act){const u=U(t.dataset.act);u.acted=!u.acted;render()}
+  else if(t.dataset.del){if(confirm('Remove this unit?')){S.units=S.units.filter(u=>u.id!==t.dataset.del);render()}}
+  else if(t.dataset.add){addSide=t.dataset.add;$('#dlgAdd').showModal()}
+  else if(t.dataset.imp){impSide=t.dataset.imp;$('#fileUnit').click()}
+});
+let addSide='P',impSide='P';
+$('#aCancel').onclick=()=>$('#dlgAdd').close();
+$('#aOk').onclick=()=>{
+  const v=id=>+$(id).value||0,mv=[{inches:v('#aMv'),mode:''}];if(v('#aJmp'))mv.push({inches:v('#aJmp'),mode:'j'});
+  S.units.push(mk({name:$('#aName').value||'Unit',pv:v('#aPv'),size:v('#aSize'),tmm:v('#aTmm'),moves:mv,armor:v('#aArm'),structure:v('#aStr'),dmg:{s:v('#aS'),m:v('#aM'),l:v('#aL')},ov:v('#aOv'),skill:$('#aSk').value===''?4:+$('#aSk').value,role:$('#aRole').value,specials:$('#aSp').value.split(',').map(s=>s.trim()).filter(Boolean)},addSide));
+  $('#dlgAdd').close();render();
+};
+$('#fileUnit').onchange=async e=>{
+  for(const f of e.target.files){try{const j=JSON.parse(await f.text());(Array.isArray(j)?j:[j]).forEach(x=>{const u=fromImport(x,impSide);S.units.push(u);log(`Imported ${u.name} (${impSide==='P'?'your force':'enemy'}).`)})}catch(err){alert('Could not import '+f.name+': '+err.message)}}
+  e.target.value='';render();
+};
+['atk','tgt','rng','amv','oth','ovu'].forEach(id=>$('#'+id).addEventListener('input',tnPreview));
+$('#bAtk').onclick=doAttack;$('#bApply').onclick=doApply;$('#bDraw').onclick=doDraw;
+$('#bShuf').onclick=()=>{newDeck();log('AI deck shuffled.');render()};
+$('#bRoll2').onclick=()=>{const r=r2();log(`2D6: ${r.a}+${r.b}=${r.t}`);$('#atkRes').textContent='2D6 = '+r.t;render()};
+$('#bInit').onclick=()=>{let a,b;do{a=r2().t;b=r2().t}while(a===b);S.init=`Initiative: you ${a} vs enemy ${b} - ${a>b?'you move first':'enemy moves first'}`;log(S.init);render()};
+$('#bNext').onclick=()=>{S.units.forEach(u=>{u.acted=false;if(!u.dead&&u.crit.eng)u.heat+=u.crit.eng});S.turn++;S.init=null;log(`--- Turn ${S.turn} ---`);render()};
+$('#bClrLog').onclick=()=>{S.log=[];render()};
+$('#bReset').onclick=()=>{if(confirm('Clear everything and start a new battle?')){S=fresh();newDeck();render()}};
+$('#bExp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mechops-lite-save.json';a.click()};
+$('#bImpSave').onclick=()=>$('#fileSave').click();
+$('#fileSave').onchange=async e=>{try{S=Object.assign(fresh(),JSON.parse(await e.target.files[0].text()));render()}catch(err){alert('Invalid save file')}e.target.value=''};
+
+load();if(!S.deck.draw.length&&!S.deck.disc.length)newDeck();render();
+</script>
+</body>
+</html>
