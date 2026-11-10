@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battletech Aces – AI Deck Companion</title>
+<style>
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --panel2:#f6f7f9; --text:#15181d; --muted:#586070; --line:#d5d9e0;
+  --accent:#b45309; --accent-soft:#fdf0dc; --accent-text:#ffffff; --link:#0b5fb0;
+  --ok:#157a3a; --bad:#b3261e; --warn:#8a5a00;
+  --card:#ffffff; --card-text:#111111; --card-line:#222222; --combat-bg:#d8d8d8; --hex:#1b1b1b; --hex-text:#ffffff;
+  --mi-g-bg:#ffffff; --mi-g-text:#111; --mi-s-bg:#111; --mi-s-text:#fff; --mi-s-line:#111;
+  --red:#e0191b; --yellow:#f5b50a;
+  --shadow:0 1px 2px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.06);
+  --focus:#1d6fe0;
+}
+:root[data-theme="dark"]{
+  --bg:#0e1013; --panel:#181b20; --panel2:#1f2329; --text:#e7e9ee; --muted:#9aa3b2; --line:#2e343d;
+  --accent:#f5a524; --accent-soft:#3a2c10; --accent-text:#14110a; --link:#6cb2ff;
+  --ok:#4cc27a; --bad:#ff7a70; --warn:#e8b04a;
+  --card:#23272e; --card-text:#ececec; --card-line:#c9ced6; --combat-bg:#363b44; --hex:#0b0c0e; --hex-text:#f1f1f1;
+  --mi-g-bg:#23272e; --mi-g-text:#eee; --mi-s-bg:#000; --mi-s-text:#fff; --mi-s-line:#c9ced6;
+  --red:#ee3b3d; --yellow:#f5b50a;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.35);
+  --focus:#6cb2ff;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;line-height:1.2}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.cond{font-family:"Bahnschrift","Arial Narrow","Roboto Condensed","Segoe UI",system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+
+/* ---------- Header ---------- */
+header.top{position:sticky;top:0;z-index:30;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
+.top-in{max-width:1500px;margin:0 auto;padding:8px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand h1{font-size:18px;font-weight:800}
+.brand small{color:var(--muted)}
+.tabs{display:flex;gap:4px;flex:1;min-width:260px;flex-wrap:wrap}
+.tab{border:1px solid transparent;background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tab:hover{background:var(--panel2);color:var(--text)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-text)}
+.tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ---------- Buttons / inputs ---------- */
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:3px 8px;font-size:13px;border-radius:6px}
+.btn.ghost{background:transparent}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+input[type=text],input[type=number],select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+input[type=number]{width:62px}
+textarea{width:100%;resize:vertical}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;font-size:14px}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+
+/* ---------- Layout ---------- */
+main{max-width:1500px;margin:0 auto;padding:16px}
+.tabpane{display:none}
+.tabpane.on{display:block}
+.layout{display:grid;grid-template-columns:minmax(300px,370px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.layout{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:14px;min-width:0}
+.panel>h2,.panel-h{font-size:15px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.panel-h h2{font-size:15px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.hint{font-size:13px;color:var(--muted)}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);font-size:12px;font-weight:600}
+.chip.accent{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip.ok{color:var(--ok);border-color:var(--ok)}
+.chip.bad{color:var(--bad);border-color:var(--bad)}
+.chip.warn{color:var(--warn);border-color:var(--warn)}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+
+/* ---------- Round steps ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0 10px}
+.step{padding:5px 2px;text-align:center;font-size:12px;font-weight:700;border-radius:6px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.step.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.step.done{color:var(--ok)}
+.roundnum{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px}
+.roundnum .btn{padding:0 9px}
+
+/* ---------- Piles ---------- */
+.pile{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin-bottom:8px}
+.stack{position:relative;width:44px;height:60px;flex:none}
+.stack i{position:absolute;inset:0;border-radius:5px;background:#202328;border:2px solid #555;box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.stack b{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:16px;z-index:5}
+.stack.empty-stack i{background:transparent;border-style:dashed;border-color:var(--line)}
+.stack.empty-stack b{color:var(--muted)}
+.pile-info{flex:1;min-width:0}
+.pile-info input[type=text]{width:100%;font-weight:700;margin-bottom:3px}
+.pile-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.deckchip.Brawler{border-color:#b3261e;color:#b3261e}
+.deckchip.Sniper{border-color:#1d6fe0;color:#1d6fe0}
+.deckchip.Skirmisher{border-color:#157a3a;color:#157a3a}
+.deckchip.Striker{border-color:#8a5a00;color:#8a5a00}
+.deckchip.Custom{border-color:var(--muted);color:var(--muted)}
+:root[data-theme="dark"] .deckchip.Brawler{border-color:#ff7a70;color:#ff7a70}
+:root[data-theme="dark"] .deckchip.Sniper{border-color:#6cb2ff;color:#6cb2ff}
+:root[data-theme="dark"] .deckchip.Skirmisher{border-color:#4cc27a;color:#4cc27a}
+:root[data-theme="dark"] .deckchip.Striker{border-color:#e8b04a;color:#e8b04a}
+
+/* ---------- Units ---------- */
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.unit{border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--panel2);cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.unit.active{border-color:var(--accent);background:var(--accent-soft)}
+.unit.finished{opacity:.7}
+.unit-top{display:flex;gap:10px}
+.unit-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.unit-main input[type=text]{font-weight:700;width:100%}
+.unit-main select{max-width:100%}
+.unit-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.mini{width:54px;height:76px;flex:none;border-radius:6px;display:grid;place-items:center;font-weight:800;font-size:17px;border:2px solid #666;transition:transform .15s}
+.mini.back{background:#1b1b1b;color:#fff;border-color:#777;clip-path:none}
+.mini.front{background:var(--card);color:var(--card-text);border-color:var(--card-line)}
+.mini.none{background:transparent;border-style:dashed;color:var(--muted);font-weight:500;font-size:12px}
+.mini.moved{transform:rotate(90deg) scale(.82)}
+.mini small{display:block;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;opacity:.8;text-align:center}
+
+/* ---------- Active panel / card face ---------- */
+.subtabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.subtab{padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-weight:600;font-size:13px}
+.subtab[aria-selected="true"]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.active-grid{display:grid;grid-template-columns:minmax(280px,350px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.active-grid{grid-template-columns:1fr}}
+
+.acard{background:var(--card);color:var(--card-text);border:2px solid var(--card-line);border-radius:12px;width:100%;max-width:350px;overflow:hidden;box-shadow:var(--shadow)}
+.acard .head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px 6px 12px}
+.acard .head .t{font-weight:800;font-size:15px}
+.acard .head .t small{font-weight:500;font-size:11px;margin-left:6px;letter-spacing:.02em;text-transform:none;opacity:.75}
+.prio{background:#111;color:#fff;font-weight:800;font-size:15px;padding:2px 8px 2px 14px;clip-path:polygon(18% 0,100% 0,100% 100%,0 100%);letter-spacing:.04em}
+:root[data-theme="dark"] .prio{background:#000;border:1px solid #666}
+.first{margin:2px 10px 8px;border:1.5px solid var(--card-line);border-radius:7px;padding:5px 8px;font-size:13px;display:flex;gap:6px;align-items:flex-start}
+.first b{flex:none;white-space:nowrap}
+.first.dim{opacity:.45}
+.mrows{padding:0 12px 10px;display:flex;flex-direction:column;gap:5px}
+.mrow{display:flex;gap:7px;align-items:flex-start;font-size:13px}
+.mrow .n{width:14px;flex:none;text-align:right;opacity:.7}
+.mi{width:21px;height:21px;border-radius:50%;display:inline-grid;place-items:center;font-weight:800;font-size:12px;flex:none;border:2px solid var(--card-line);line-height:1;position:relative}
+.mi.G{background:var(--mi-g-bg);color:var(--mi-g-text)}
+.mi.J{background:var(--red);color:#fff;border-color:var(--red)}
+.mi.P{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.mi.S{background:var(--mi-s-bg);color:var(--mi-s-text);border-color:var(--mi-s-line)}
+.mi.down::after{content:"";position:absolute;right:-4px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--bad);border:1px solid var(--card)}
+.cbt{background:var(--combat-bg);padding:8px 12px 10px;clip-path:polygon(0 12px,10px 0,100% 0,100% 100%,0 100%);margin-top:4px;position:relative}
+.cbt h4{font-size:12px;text-transform:uppercase;letter-spacing:.07em;display:flex;gap:8px;align-items:center;margin:6px 0 6px}
+.cbt .ovtag{font-weight:500;text-transform:none;letter-spacing:0}
+.icons{display:flex;gap:7px;align-items:center;flex-wrap:wrap;min-height:54px}
+.hex{width:44px;height:48px;background:var(--hex);color:var(--hex-text);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:grid;place-items:center;text-align:center;font-size:9.5px;line-height:1.05;font-weight:600;flex:none}
+.stat{background:var(--hex);color:var(--hex-text);font-size:11px;font-weight:600;padding:5px 6px;border-radius:2px;position:relative;margin:10px 0;flex:none;min-width:40px;text-align:center}
+.stat.hi::before,.stat.lo::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent}
+.stat.hi::before{top:-9px;border-bottom:9px solid var(--hex)}
+.stat.lo::after{bottom:-9px;border-top:9px solid var(--hex)}
+.stat .pm{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;line-height:1;font-weight:800;color:var(--hex-text)}
+.stat.hi .pm{top:-8px;color:var(--card)}
+.stat.lo .pm{bottom:-8px;color:var(--card)}
+.cmask{position:absolute;inset:0;background:repeating-linear-gradient(45deg,var(--combat-bg),var(--combat-bg) 10px,var(--panel2) 10px,var(--panel2) 20px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;padding:10px;z-index:3;font-size:13px;color:var(--card-text)}
+.cardback{width:100%;max-width:350px;aspect-ratio:1.45/1;border-radius:12px;background:#17191d;color:#fff;border:2px solid #666;display:flex;flex-direction:column;justify-content:space-between;padding:12px 16px;box-shadow:var(--shadow)}
+.cardback .big{font-size:64px;font-weight:900;letter-spacing:.04em;line-height:1}
+.cardback .nm{align-self:flex-end;font-weight:800;font-size:24px;letter-spacing:.06em;text-transform:uppercase}
+
+/* ---------- Interpretation ---------- */
+.interp h3{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 0 8px}
+.irow{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:var(--panel2)}
+.irow.skip{opacity:.5}
+.irow.chosen{border-color:var(--accent);background:var(--accent-soft)}
+.irow .tx{font-weight:600}
+.irow .sub{grid-column:2;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px}
+.irow .num{font-weight:800;color:var(--muted);align-self:center}
+.result{border:2px solid var(--accent);border-radius:12px;padding:10px 12px;background:var(--accent-soft);margin:10px 0}
+.result .big{font-size:18px;font-weight:800;display:flex;gap:8px;align-items:center}
+.tri{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tri button{border:0;background:var(--panel);padding:2px 8px;cursor:pointer;font-size:12px;font-weight:700}
+.tri button+button{border-left:1px solid var(--line)}
+.tri button.on.y{background:var(--ok);color:#fff}
+.tri button.on.n{background:var(--bad);color:#fff}
+.chain{display:flex;flex-direction:column;gap:6px}
+.chain .it{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.chain .it .no{font-weight:800;color:var(--muted)}
+.tr{border-left:3px solid var(--line);padding:4px 0 4px 10px;margin:4px 0;font-size:14px}
+.tr.narrow{border-color:var(--accent)}
+.tr.final{border-color:var(--ok);background:rgba(21,122,58,.08)}
+.attacker{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:8px 10px;border:1px dashed var(--line);border-radius:10px;margin-bottom:10px}
+.attacker label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.attacker input{width:60px}
+
+/* ---------- Roster table ---------- */
+.tbl-wrap{overflow-x:auto}
+table.roster{border-collapse:collapse;width:100%;min-width:900px;font-size:13px}
+table.roster th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:center;padding:3px 3px;white-space:nowrap;cursor:help}
+table.roster td{padding:3px 3px;text-align:center;border-top:1px solid var(--line)}
+table.roster td input[type=number]{width:54px}
+table.roster td input[type=text]{width:118px}
+table.roster td.hp{font-weight:700;white-space:nowrap}
+table.roster tr.dead{opacity:.45}
+
+/* ---------- Library ---------- */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.libitem{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+
+/* ---------- Flow ---------- */
+.flowwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:6px;max-height:760px}
+svg.flow{display:block;margin:0 auto;font-family:inherit;width:100%;height:auto;min-width:680px}
+svg.flow .edge{stroke:var(--muted);stroke-width:1.6;fill:none;opacity:.7}
+svg.flow .edge.vis{stroke:var(--accent);stroke-width:3;opacity:1}
+svg.flow .elab{font-size:12px;font-weight:700;fill:var(--muted);paint-order:stroke;stroke:var(--panel2);stroke-width:4px}
+svg.flow .elab.vis{fill:var(--accent)}
+svg.flow .nd .shape{fill:var(--panel);stroke:var(--muted);stroke-width:1.6}
+svg.flow .nd.q .shape{stroke:#1d6fe0}
+svg.flow .nd.roll .shape{stroke:#a23ac2}
+svg.flow .nd.end .shape{stroke:var(--card-line)}
+svg.flow .nd.vis .shape{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.4}
+svg.flow .nd.cur .shape{stroke:var(--accent);stroke-width:4;fill:var(--accent-soft)}
+svg.flow .nd text{fill:var(--text);font-size:12.5px;text-anchor:middle;pointer-events:none}
+svg.flow .nd text.l1{font-weight:700}
+svg.flow .nd text.l2{fill:var(--muted);font-size:11.5px}
+svg.flow .tag circle{stroke-width:2}
+svg.flow .tag text{font-size:12px;font-weight:800}
+.runner{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel2)}
+.runner .q{font-size:17px;font-weight:700;margin:4px 0}
+.runner .opts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.crumbs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted);margin-top:8px}
+.crumbs span.c{padding:1px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line)}
+.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.pbox{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel2)}
+.pbox h4{margin-bottom:8px;font-size:15px}
+.pgrid{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;font-size:13px}
+.pbox textarea{margin-top:4px;font-size:13px;min-height:44px}
+
+/* ---------- Manual ---------- */
+.manual{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.manual{grid-template-columns:1fr}}
+.toc{position:sticky;top:78px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.toc a{padding:4px 8px;border-radius:6px;text-decoration:none;color:var(--muted)}
+.toc a:hover{background:var(--panel2);color:var(--text)}
+.doc h2{font-size:22px;margin:28px 0 8px;padding-top:8px;border-top:1px solid var(--line)}
+.doc h2:first-child{margin-top:0;border-top:0;padding-top:0}
+.doc h3{font-size:16px;margin:16px 0 6px}
+.doc p,.doc li{max-width:78ch}
+.doc li{margin:3px 0}
+.doc table{border-collapse:collapse;margin:8px 0;font-size:14px}
+.doc th,.doc td{border:1px solid var(--line);padding:5px 9px;text-align:left;vertical-align:top}
+.doc th{background:var(--panel2)}
+.doc kbd,.doc code{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:13px}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;max-width:78ch}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin:8px 0}
+.legend>div{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);font-size:13px}
+.legend .icons{min-height:0}
+
+/* ---------- Dialog / toast ---------- */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);padding:0;max-width:min(680px,94vw);width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog .dlg{padding:16px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
+dialog .acts{display:flex;gap:8px;justify-content:flex-end}
+.cardpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:10px;box-shadow:var(--shadow);z-index:100;max-width:90vw;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.log{max-height:150px;overflow:auto;font-size:12.5px;color:var(--muted);display:flex;flex-direction:column-reverse}
+.drop{outline:3px dashed var(--accent);outline-offset:-8px}
+footer{max-width:1500px;margin:10px auto 30px;padding:0 16px;color:var(--muted);font-size:12.5px}
+@media print{header.top,.tools{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><h1 class="cond">Aces AI Deck Companion</h1><small>Battletech Alpha Strike solo / co-op</small></div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-act="tab" data-tab="table" id="tabbtn-table">Table</button>
+      <button class="tab" role="tab" data-act="tab" data-tab="library" id="tabbtn-library">Card Library</button>
+      <button class="tab" role="tab" data-act="tab" data-tab="flow" id="tabbtn-flow">Flow AI</button>
+      <button class="tab" role="tab" data-act="tab" data-tab="manual" id="tabbtn-manual">Manual</button>
+    </nav>
+    <div class="tools">
+      <button class="btn" data-act="theme" id="themeBtn" title="Cycle theme: Auto → Light → Dark">Theme: Auto</button>
+      <button class="btn" data-act="export" title="Download all settings, decks and units as a JSON file">Export JSON</button>
+      <button class="btn" data-act="import" title="Load a previously exported JSON file">Import JSON</button>
+      <button class="btn danger" data-act="reset" title="Clear everything and start fresh">Reset</button>
+      <input type="file" id="fileIn" accept="application/json,.json" hidden>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================= TABLE ================= -->
+<section class="tabpane" id="pane-table" aria-labelledby="tabbtn-table">
+  <div class="layout">
+    <div class="col">
+      <div class="panel" id="p-round"></div>
+      <div class="panel" id="p-piles"></div>
+      <div class="panel" id="p-options"></div>
+      <div class="panel"><div class="panel-h"><h2>Log</h2><button class="btn sm ghost" data-act="clearlog">Clear</button></div><div class="log" id="log"></div></div>
+    </div>
+    <div class="col">
+      <div class="panel" id="p-units"></div>
+      <div class="panel" id="p-active"></div>
+      <div class="panel" id="p-roster"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LIBRARY ================= -->
+<section class="tabpane" id="pane-library" aria-labelledby="tabbtn-library">
+  <div class="panel">
+    <div class="panel-h"><h2>All 32 AI cards</h2><span class="hint">Click “Inspect” to open a card with the full interpretation on the Table tab.</span></div>
+    <div class="filters" id="libfilters"></div>
+    <div class="libgrid" id="libgrid"></div>
+  </div>
+</section>
+
+<!-- ================= FLOW ================= -->
+<section class="tabpane" id="pane-flow" aria-labelledby="tabbtn-flow">
+  <div class="panel" id="p-flowintro"></div>
+  <div class="layout" style="margin-top:16px">
+    <div class="col">
+      <div class="panel" id="p-flowrunner"></div>
+      <div class="panel" id="p-flowparams"></div>
+    </div>
+    <div class="col">
+      <div class="panel"><div class="panel-h"><h2 id="flowTitle">Flow chart</h2><div class="row" id="flowKindSwitch"></div></div><div class="flowwrap" id="flowChart"></div>
+        <p class="hint" style="margin:8px 0 0">Blue outline = question, purple = dice roll, round boxes = outcome. The path you walk is highlighted in amber. Hover a box for the full text.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MANUAL ================= -->
+<section class="tabpane" id="pane-manual" aria-labelledby="tabbtn-manual">
+<div class="manual">
+  <nav class="toc panel" aria-label="Manual contents">
+    <a href="#m-intro">1 · What this is</a>
+    <a href="#m-quick">2 · Quick start</a>
+    <a href="#m-table">3 · The Table tab</a>
+    <a href="#m-cards">4 · Reading a card</a>
+    <a href="#m-move">5 · Movement phase</a>
+    <a href="#m-combat">6 · Combat phase</a>
+    <a href="#m-flow">7 · Flow AI (alternative)</a>
+    <a href="#m-save">8 · Save, load, themes</a>
+    <a href="#m-rules">9 · Rules cheat sheet</a>
+    <a href="#m-tips">10 · Tips &amp; limits</a>
+  </nav>
+  <article class="panel doc">
+    <h2 id="m-intro">1 · What this is</h2>
+    <p>This single HTML file replaces the physical <b>Battletech Aces</b> AI cards. You build one or many <b>deck piles</b>, assign them to AI-controlled units, deal cards each round, and the tool shows what each card tells the unit to do — in the original card layout <i>and</i> as a plain step-by-step checklist. It does not know your map, so you still measure ranges, check line of sight and move the miniatures yourself; the tool does the card handling, the ordering by priority, the bookkeeping and (optionally) the target maths.</p>
+    <p>There is also an <b>alternative AI</b> (tab “Flow AI”): instead of cards, a unit walks through a flow chart of decision points (“Am I crippled?”, “Can I kill something?”, “Roll a stance”, …). Use it per unit, or mix cards and flow in the same game.</p>
+
+    <h2 id="m-quick">2 · Quick start</h2>
+    <ol>
+      <li>Open the <b>Table</b> tab. Under <b>Options &amp; presets</b> load a scenario (<i>Meet &amp; Greet</i> or <i>Clash of Steel</i> from the Aces rules) — or build your own: under <b>Decks</b> press <b>+ Add pile</b>, under <b>AI units</b> press <b>+ Add AI unit</b> and pick the pile for each unit.</li>
+      <li>Tick <b>Jump</b> on every unit that has jump jets (a red <span class="mi J" style="display:inline-grid;vertical-align:middle">J</span> row becomes ground movement for units without them).</li>
+      <li>In <b>Round</b>: if the AI team lost initiative, switch on <b>AI lost initiative</b>. Press <b>Deal AI cards</b>. Every card-driven unit gets a face-down card; only the priority number is visible, exactly like the card back.</li>
+      <li>Press <b>Activate next unit</b>. The unit with the <i>lowest</i> priority number that has not moved yet is opened in the <b>Active unit</b> panel and its card is turned face up. Work through the movement rows (section 5), mark where you stopped, move the miniature, then press <b>Done – next unit</b>.</li>
+      <li>When all AI units have moved (and the players have attacked) press <b>Start combat phase</b>. Use <b>Next attacker</b> to go through the cards in ascending priority and read the target icons (section 6).</li>
+      <li>Press <b>End round</b>: cards go back into their piles, piles are reshuffled and the round counter goes up.</li>
+      <li>Want to just draw a card? Press <b>Draw</b> on any pile — the card opens as a <b>Free draw</b> with the full interpretation, no unit needed.</li>
+      <li>Press <b>Export JSON</b> any time to keep your setup; <b>Import JSON</b> loads it again.</li>
+    </ol>
+
+    <h2 id="m-table">3 · The Table tab</h2>
+    <h3>Round (top left)</h3>
+    <p>Shows the four phases of an Aces round — Initiative, Movement, Combat, End — and the buttons that belong to the current phase. <b>AI lost initiative</b> controls the “If first” box: when it is on and no player unit has moved yet, an AI unit must use the “If first” instruction and ignore the numbered rows. With unequal numbers of units several AI units may move first: each active unit has its own <b>Use “If first”</b> tick-box that you can override.</p>
+    <h3>Decks (piles)</h3>
+    <p>Each pile is one shuffled deck. It starts as one of the four 8-card role decks (Brawler, Sniper, Skirmisher, Striker) or as a <b>Custom</b> pile where you tick exactly which of the 32 cards are in it. Several units can <b>share</b> a pile (the rules allow it for units with the same role). The big number is the draw-pile size; the line below shows draw / discard / in hand. Buttons: <b>Draw</b> (free draw), <b>Shuffle</b>, <b>Edit</b> (rename, change type or contents), <b>✕</b> (remove). If a pile runs dry it automatically reshuffles its discard; if every card is in hand, a fresh full deck is used and you get a notice.</p>
+    <h3>AI units</h3>
+    <p>One tile per AI-controlled unit: name, pile, <b>AI mode</b> (Cards or Flow), Jump tick-box, and the card slot (back with priority number → face-up → sideways once moved). Click a tile to select it; <b>Draw/Return</b> deals or returns a single card by hand; <b>Activate</b> opens it; <b>Done</b> marks the current phase finished for that unit (Movement or Combat). Flow-mode units have no priority number: “Activate next unit” takes them after all card units, in list order.</p>
+    <h3>Active unit</h3>
+    <p>The working area. The tabs <b>Movement</b> and <b>Combat</b> switch between the two halves of the card. During the movement phase the combat strip is covered (the rules say not to read it yet) — click <b>peek</b> if you want to look anyway. On the right you see the interpretation: the rows with automatic condition checks, your resolved move, and — in combat — the target priority chain plus the <b>Target calculator</b>. For Flow-mode units this area holds the flow runner instead.</p>
+    <h3>Player units (roster)</h3>
+    <p>Optional but powerful: list the enemy (= your) units with their stats and the tool resolves phrases like “toward <i>highest health enemy</i>” and the whole combat target chain for you. Fields: <b>Alive</b>, <b>Moved</b> (has this player unit moved this round — the AI prefers enemies that have moved), <b>Valid target</b> (in LOS, firing arc and weapon range of the active AI unit), <b>Dist</b> (inches to the active AI unit), <b>Range</b> band (S/M/L), <b>TMM</b>, <b>MV</b>, <b>PV</b>, <b>Armor</b>, <b>Struct</b> (current values), <b>Pend</b> (damage already marked this round — it reduces armor first, then structure), <b>Threat</b> (max damage it can inflict this turn) and <b>Cover</b> (the target has partial cover or benefits from woods against this attack). Health is calculated from armor + structure − pending. The <b>Attacker stats</b> boxes in the Active unit panel (damage at S/M/L and OV) allow the tool to evaluate “Can Destroy” and “Can Crit”.</p>
+
+    <h2 id="m-cards">4 · Reading a card</h2>
+    <p>Each card has a <b>priority number</b> (shown on the back too), a <b>Move Phase</b> half and a <b>Combat Phase</b> half. The Move half starts with an “If first” box, followed by numbered rows. Every row begins with a movement-mode icon:</p>
+    <div class="legend" id="legendModes"></div>
+    <p>The Combat half is a left-to-right list of <b>target icons</b>. The leftmost is the top priority; every following icon only breaks ties. Hexagons are yes/no conditions, boxes with a triangle are stats (triangle up = highest, down = lowest):</p>
+    <div class="legend" id="legendIcons"></div>
+    <p>“Use OV” beside the Combat Phase title: spend only as much Overheat as is needed to destroy the target if the attack hits (e.g. damage 3, OV 2, target has 4 structure left → spend 1 OV).</p>
+
+    <h2 id="m-move">5 · Movement phase — step by step</h2>
+    <ol>
+      <li><b>Order.</b> AI units act in ascending priority (back-of-card number). “Activate next unit” does the comparison for you.</li>
+      <li><b>If first?</b> If the AI team lost initiative and no player unit has moved: use the “If first” box only. Otherwise ignore it.</li>
+      <li><b>Read the rows in order.</b> Row 1 is the main instruction; if it leaves several equally good options, row 2 is the tiebreaker, then row 3, and so on until one clear destination remains. The tool lists every row with a status badge:
+        <ul>
+          <li><span class="chip ok">true</span> / <span class="chip bad">false</span> — a conditional row (“If no enemies within 16″ …”) was checked automatically from the roster; false rows are greyed out as “skip”. Anything the tool cannot know shows <span class="chip warn">? check</span> with <b>Yes / No</b> buttons for you.</li>
+          <li>Blue chips such as <span class="chip accent">→ Warhammer</span> — which roster unit the phrase “highest health enemy”, “nearest enemy” … points to (only enemies that already moved are considered; if none moved, all are).</li>
+          <li><span class="chip">board</span> — needs a look at the map (woods/cover, LOS counts, “you can get behind”, elevation).</li>
+        </ul></li>
+      <li><b>Mark the last row you needed</b> with <b>Last row used</b>. The <b>movement mode</b> of that row is the mode you use (Ground, Jump, Sprint or Stand still). Jump on a unit without jump jets is shown as Ground.</li>
+      <li><b>Facing.</b> The result box tells you whether to face the single enemy the instruction named or the majority of enemy units (if unclear: the highest-PV units).</li>
+      <li>Move the miniature along the <b>shortest path</b>, then press <b>Done – next unit</b>. The card turns sideways.</li>
+    </ol>
+    <div class="callout"><b>AI Golden Rule:</b> whenever an instruction leaves several options that the card does not decide, pick the option that benefits the AI unit most. Also: the AI wants LOS and range to at least one enemy that has already moved (so it can shoot), seeks partial cover — woods are preferred over partial cover — and always takes the shortest, most direct path.</div>
+
+    <h2 id="m-combat">6 · Combat phase — step by step</h2>
+    <ol>
+      <li>The players resolve <i>all</i> their attacks first. Mark damage in the roster’s <b>Pend</b> column — the AI looks at the board as it currently is, including damage that is marked but not yet applied.</li>
+      <li>Press <b>Start combat phase</b>, then <b>Next attacker</b> (ascending priority). The Combat strip is revealed.</li>
+      <li>Each target icon is explained in order. With the roster filled in, the <b>Target calculator</b> shows a trace: which enemies each icon narrows down to, and the final target. If a tie remains, pick whichever target the AI would profit from most.</li>
+      <li>Roll the attack as in normal Alpha Strike (someone rolls for the AI). Damage is applied in the End phase.</li>
+    </ol>
+
+    <h2 id="m-flow">7 · Flow AI (alternative AI)</h2>
+    <p>The flow AI trades the card randomness for a readable decision tree, plus one dice roll per move so the unit still surprises you. Switch a unit to <b>AI mode: Flow</b> in its tile and pick a <b>role</b>; its Active panel then shows a runner with a question and answer buttons. The <b>Flow AI</b> tab contains the full charts, a practice runner and the editable role parameters.</p>
+    <h3>Movement flow</h3>
+    <ol>
+      <li><b>Crippled?</b> Armor+Structure at or below the role’s <i>retreat threshold</i>, or a crit that removed its main attack (always yes under Forced Withdrawal) → <b>Break contact</b>.</li>
+      <li><b>AI moves first?</b> → <b>Opening position</b> from the role (the flow equivalent of “If first”).</li>
+      <li><b>Kill reachable?</b> Can it get LOS and range to an enemy it can destroy (with OV)? → <b>Finish it</b>.</li>
+      <li><b>Enemy inside panic range?</b> (Snipers 12″, Skirmishers/Strikers 6″, Brawlers never) → <b>Kite</b> back to the role’s standoff range.</li>
+      <li><b>Roll 1d6 → stance.</b> The role’s two thresholds split the die into <b>Aggressive</b>, <b>Balanced</b> and <b>Cautious</b>.
+        <ul>
+          <li><i>Aggressive</i> → <b>Rush</b> the role’s preferred target.</li>
+          <li><i>Balanced</i> → already have LOS + range to a moved enemy and cover? <b>Hold &amp; fire</b>; otherwise can cover be reached? <b>Advance into cover</b>, else <b>Advance</b>.</li>
+          <li><i>Cautious</i> → can it stay at the standoff range with LOS to someone? <b>Move to firing line</b>; otherwise <b>Fall back</b>.</li>
+        </ul></li>
+    </ol>
+    <h3>Combat flow</h3>
+    <p>Sprinted/shut down? → no attack. Any valid target? → else no attack. Can an enemy be destroyed with normal damage → <b>kill chain</b>. With OV (OV &gt; 0, heat ≤ 1) → <b>kill chain + spend only the needed OV</b>. Exposed enemy (no cover)? → <b>exposed chain</b>. Unit below half health? → <b>self-preservation chain</b> (highest threat first). Otherwise the <b>role’s default chain</b>. The resulting chain is a normal list of target icons and feeds the same Target calculator as the cards.</p>
+    <h3>Editing the roles</h3>
+    <p>On the Flow AI tab each role has editable numbers (standoff range, panic range, retreat %, stance thresholds), text (preferred target, opening position) and a target chain written as tokens: <code>destroy crit nocover near health+ health- tmm+ tmm- range+ range- threat+ threat- mv+ mv- pv+ pv-</code>. Changes are saved with <b>Export JSON</b>.</p>
+
+    <h2 id="m-save">8 · Save, load, themes</h2>
+    <ul>
+      <li><b>Export JSON</b> writes a file containing: all piles (including their current draw/discard order), AI units and their cards, the player roster, flow-AI parameters, round and phase, and your options. <b>Import JSON</b> (or drag the file onto the page) restores it; the file is checked first and an invalid file changes nothing.</li>
+      <li>The page also keeps an automatic copy in the browser (when the browser allows it). <b>Reset</b> wipes that and starts fresh.</li>
+      <li><b>Theme</b> cycles Auto (follows your system) → Light → Dark. The choice is part of the exported file.</li>
+    </ul>
+
+    <h2 id="m-rules">9 · Rules cheat sheet (from the Aces rules)</h2>
+    <table>
+      <tr><th>Phase</th><th>What happens</th></tr>
+      <tr><td>Setup</td><td>Give each AI unit a deck matching its role; units with the same role can share a deck. Shuffle each deck.</td></tr>
+      <tr><td>Initiative</td><td>Roll initiative for the AI team, then deal one card per AI unit from its deck, face down.</td></tr>
+      <tr><td>Movement</td><td>Lowest priority number first. Flip, read only the Move half. “If first” if the AI moves before any player unit. Turn the card sideways when done.</td></tr>
+      <tr><td>Combat</td><td>Players attack first. Then reveal the cards in ascending priority and resolve the target icons. Someone rolls for the AI.</td></tr>
+      <tr><td>End</td><td>Apply damage and crits. Return the cards to their decks and shuffle.</td></tr>
+    </table>
+    <ul>
+      <li><b>Enemy units:</b> prefer enemies that already moved; if none moved, consider all.</li>
+      <li><b>Woods/cover:</b> always seek partial cover from the intended target; woods beat partial cover and are best when the target does not benefit from woods itself.</li>
+      <li><b>“Toward”:</b> if the unit can end behind the target (outside its firing arc) within short range, it does so; otherwise shortest path, stopping just before base contact. <b>“To X″”:</b> reach that range by the shortest path, not by moving as far as possible.</li>
+      <li><b>LOS rows:</b> if a unit has 0 damage at Long range, treat its LOS as extending only to the Medium limit (24″).</li>
+      <li><b>Jump</b> rows → Ground if the unit cannot jump. <b>Sprint</b> and <b>Stand still</b> rows carry a condition to check.</li>
+      <li><b>Forced Withdrawal:</b> use the first non-Stand-still mode on the card and move as close as possible to the deployment edge; otherwise face the most enemies.</li>
+      <li><b>Difficulty:</b> easier = AI force ≈ 75 % of your PV and/or skill +1; harder = ≈ 125 % PV and/or skill −1.</li>
+      <li><b>Clash of Steel formation rule:</b> AI units use the Battle Star’s Lucky ability whenever they need a 7+ and miss.</li>
+    </ul>
+    <p class="hint">Rules text: “Battletech Aces Rules” by Josh Derksen, Lynnvander Studios for Catalyst Game Labs (v. 2023-03-10), summarised here as a personal play aid. This tool is unofficial; BattleTech and Alpha Strike are trademarks of their respective owners.</p>
+
+    <h2 id="m-tips">10 · Tips &amp; limits</h2>
+    <ul>
+      <li>Use the optional <b>movement dice</b> (see the Alpha Strike Commander’s Edition) to show each unit’s TMM — then the roster’s TMM column is quick to fill.</li>
+      <li>You do not have to fill the roster: the tool then simply lists the rows and icons and you decide the targets yourself.</li>
+      <li>Distances and “valid target” flags are always relative to the <i>active</i> AI unit — update them when you switch units.</li>
+      <li>Ties are never resolved by the tool: the rules say to choose the option that benefits the AI most, so you decide.</li>
+      <li>The tool cannot see the map: LOS counts, cover, elevation and “you can get behind” are marked <span class="chip">board</span> for you to judge.</li>
+      <li>On a phone, rotate to landscape for the roster table; it scrolls sideways.</li>
+    </ul>
+  </article>
+</div>
+</section>
+</main>
+
+<footer>Unofficial fan-made play aid. Card contents follow “Battletech Aces” (Lynnvander Studios / Catalyst Game Labs). All data stays in your browser.</footer>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* =====================================================================
+   Battletech Aces – AI Deck Companion
+   Single-file app. Sections: helpers · card data · state · logic · render · flow AI · events
+   ===================================================================== */
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = p => p + Math.random().toString(36).slice(2, 8);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const num = v => { if (v === '' || v === null || v === undefined) return null; const x = parseFloat(v); return Number.isFinite(x) ? x : null; };
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- card data (transcribed from AcesCards.pdf) ---------- */
+const DECKS = ['Brawler', 'Sniper', 'Skirmisher', 'Striker'];
+const CARDS = [];
+const CODE = { Brawler: 'BR', Sniper: 'SN', Skirmisher: 'SK', Striker: 'ST' };
+// mk(deck, number, priority, [firstMode, firstText], [[mode,text],…], combat tokens, useOV)
+function mk(deck, n, pr, first, rows, combat, ov) {
+  CARDS.push({ id: CODE[deck] + n, deck, n, pr, prn: parseInt(pr, 10), first: { m: first[0], t: first[1] },
+    rows: rows.map(r => ({ m: r[0], t: r[1] })), combat: parseChain(combat), ov: !!ov });
+}
+function parseChain(str) {
+  return String(str || '').split(/[\s,]+/).filter(Boolean).map(tok => {
+    const m = tok.toLowerCase().match(/^([a-z]+)([+-])?$/); if (!m) return null;
+    const k = m[1]; if (!ICONS[k]) return null;
+    const d = m[2] === '+' ? 'hi' : m[2] === '-' ? 'lo' : null;
+    if (ICONS[k].stat && !d) return { k, d: 'lo' };
+    if (!ICONS[k].stat) return { k, d: null };
+    return { k, d };
+  }).filter(Boolean);
+}
+const ICONS = {
+  destroy: { label: 'Can<br>Destroy', name: 'Can Destroy' },
+  crit: { label: 'Can<br>Crit', name: 'Can Crit' },
+  nocover: { label: 'No<br>Cover', name: 'No Cover' },
+  near: { label: 'Near', name: 'Near' },
+  health: { label: 'Health', name: 'Health', stat: true },
+  tmm: { label: 'TMM', name: 'TMM', stat: true },
+  range: { label: 'Range', name: 'Range', stat: true },
+  threat: { label: 'Threat', name: 'Threat', stat: true },
+  mv: { label: 'MV', name: 'MV', stat: true },
+  pv: { label: 'PV', name: 'PV', stat: true }
+};
+const ICON_HELP = {
+  destroy: 'Target the enemy that this attack would destroy if it hits.',
+  crit: 'Target the enemy that would suffer a critical hit (at least 1 point of structure damage) if the attack hits.',
+  nocover: 'Target the enemy that has no partial cover and does not benefit from woods against this attack.',
+  near: 'Target the physically closest enemy. If tied, choose the one that is best for the AI.',
+  health: 'Health = remaining Armor + Structure (including damage already marked this round).',
+  tmm: 'TMM = current Target Movement Modifier incl. jump bonus and crit modifiers.',
+  range: 'Range = range band of the enemy (short / medium / long).',
+  threat: 'Threat = the maximum damage the enemy can inflict this turn with its attack.',
+  mv: 'MV = movement value; with several values use the highest/lowest, whatever the movement type.',
+  pv: 'PV = Point Value.'
+};
+function iconExplain(t) {
+  const I = ICONS[t.k];
+  if (!I.stat) return { title: I.name, text: ICON_HELP[t.k] };
+  if (t.k === 'range') return { title: 'Range ' + (t.d === 'hi' ? '▲ longest' : '▼ shortest'), text: 'Target the enemy in the ' + (t.d === 'hi' ? 'longest' : 'shortest') + ' range band. ' + ICON_HELP.range };
+  return { title: I.name + ' ' + (t.d === 'hi' ? '▲ highest' : '▼ lowest'), text: 'Target the enemy with the ' + (t.d === 'hi' ? 'highest' : 'lowest') + ' ' + I.name + '. ' + ICON_HELP[t.k] };
+}
+
+/* BRAWLER */
+mk('Brawler', 1, '020', ['J', 'to 24" from all enemies, and woods/cover from most enemies'],
+  [['J', 'into woods/cover from most enemies'], ['J', 'toward lowest TMM enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward highest PV enemy'], ['G', 'toward nearest enemy']],
+  'destroy health+ tmm- near');
+mk('Brawler', 2, '065', ['J', 'to 16" from all enemies, and woods/cover from most enemies'],
+  [['G', 'into woods/cover from most enemies'], ['G', 'toward highest health enemy'], ['G', 'toward lowest TMM enemy'], ['G', 'toward highest PV enemy'], ['G', 'toward nearest enemy']],
+  'tmm- destroy health+ nocover near');
+mk('Brawler', 3, '135', ['J', 'to 24" from all enemies, and no LOS or most cover.'],
+  [['G', 'If lowest health enemy is further than 24", toward lowest health enemy'], ['J', 'to fewest enemies in LOS (min.1)'], ['J', 'into woods/cover from most enemies'], ['G', 'toward nearest enemy']],
+  'tmm- destroy crit near', true);
+mk('Brawler', 4, '195', ['J', 'to 16" from nearest enemy, and no enemies in LOS or woods/cover from most enemies.'],
+  [['J', 'into woods/cover from most enemies'], ['J', 'toward highest health enemy'], ['G', 'toward lowest MV enemy'], ['G', 'toward nearest enemy']],
+  'range- destroy nocover tmm- near');
+mk('Brawler', 5, '256', ['J', 'to 12" from nearest enemy, and no enemies in LOS or woods/cover from most enemies.'],
+  [['G', 'toward highest health enemy'], ['G', 'toward biggest threat enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward highest PV enemy'], ['G', 'toward nearest enemy']],
+  'tmm- destroy near');
+mk('Brawler', 6, '410', ['J', 'to most enemies in LOS, and woods/cover from most enemies'],
+  [['G', 'to most enemies in LOS'], ['G', 'into woods/cover from most enemies'], ['G', 'toward lowest TMM enemy'], ['G', 'toward nearest enemy']],
+  'range- destroy tmm- nocover near');
+mk('Brawler', 7, '575', ['J', 'to most enemies in LOS, and woods/cover from most enemies'],
+  [['S', 'If no enemies within 16" and at least 1 enemy in LOS with TMM 1 or less'], ['G', 'into woods/cover from most enemies'], ['G', 'toward biggest threat enemy'], ['G', 'toward nearest enemy']],
+  'destroy range- tmm- nocover near');
+mk('Brawler', 8, '798', ['G', 'to 12" from nearest enemy, and no enemies in LOS or woods/cover from most enemies.'],
+  [['S', 'If no enemies within 12" and at least 1 enemy in LOS with TMM 1 or less'], ['G', 'into woods/cover from most enemies'], ['G', 'toward biggest threat enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward nearest enemy']],
+  'destroy tmm+ near', true);
+/* SNIPER */
+const SN_ROWS = [['J', 'If any enemies within 12": to 18" from all enemies'], ['J', 'onto highest elevation'], ['G', 'toward most allies in LOS, facing most enemies'], ['G', 'into LOS to lowest TMM enemy'], ['G', 'toward nearest enemy']];
+mk('Sniper', 1, '212', ['P', 'to 42" from all enemies, and fewest enemies in LOS (min.0)'], SN_ROWS, 'destroy tmm- nocover threat+ near');
+mk('Sniper', 2, '236', ['G', 'to 30" and LOS to most enemies, and woods/cover from most enemies'], SN_ROWS, 'destroy tmm- nocover threat+ near');
+mk('Sniper', 3, '243', ['G', 'to 24" and LOS to nearest enemy, and woods/cover from most enemies'],
+  [['G', 'to 24" from nearest enemy'], ['G', 'into woods/cover from most enemies'], ['G', 'into LOS to lowest TMM enemy'], ['G', 'into LOS to nearest enemy within 24"'], ['G', 'toward nearest enemy']],
+  'destroy tmm- nocover range- near');
+mk('Sniper', 4, '387', ['G', 'to 30" and LOS to nearest enemy, and woods/cover from most enemies'],
+  [['G', 'into woods/cover from most enemies'], ['G', 'to LOS to enemy with lowest health'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward nearest enemy']],
+  'health- tmm- range- near');
+mk('Sniper', 5, '617', ['J', 'to 24" and LOS to most enemies, and woods/cover from most enemies'],
+  [['S', 'If you have woods/cover from all enemies, and at least 1 enemy within LOS.'], ['J', 'into woods/cover from most enemies'], ['G', 'into LOS to lowest health enemy'], ['G', 'toward nearest enemy']],
+  'destroy tmm- range- near', true);
+mk('Sniper', 6, '779', ['G', 'to 36" and LOS to most enemies, and woods/cover from most enemies'],
+  [['S', 'If no enemies within 12" and at least 1 enemy in LOS'], ['G', 'into LOS to enemy with lowest health'], ['J', 'into woods/cover from most enemies'], ['J', 'toward enemy with lowest health'], ['J', 'toward nearest enemy']],
+  'health- tmm- range- near');
+mk('Sniper', 7, '848', ['G', 'to 42" and LOS to most enemies, and woods/cover from most enemies'],
+  [['S', 'If no enemies within 18" and at least 1 enemy in LOS'], ['G', 'toward 18" from all enemies'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward nearest enemy']],
+  'destroy tmm+ nocover health- near');
+mk('Sniper', 8, '952', ['G', 'to 30" and LOS to most enemies, and woods/cover from most enemies'],
+  [['S', 'If only 1 enemy in LOS'], ['S', 'If you have woods/cover from all enemies'], ['G', 'into woods/cover from most enemies'], ['G', 'toward M from all enemies'], ['G', 'toward nearest enemy']],
+  'destroy tmm- range- near', true);
+/* SKIRMISHER */
+mk('Skirmisher', 1, '051', ['J', 'to 12" from nearest enemy, and woods/cover from most enemies'],
+  [['J', 'toward lowest TMM enemy'], ['J', 'toward biggest threat enemy'], ['J', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward nearest enemy']],
+  'destroy threat+ tmm- nocover near');
+mk('Skirmisher', 2, '166', ['G', 'to 18" and LOS to nearest enemy, and woods/cover from most enemies'],
+  [['G', 'to 18" from nearest enemy'], ['G', 'into woods/cover from most enemies'], ['G', 'into LOS to lowest TMM enemy'], ['G', 'into LOS to nearest enemy within 24"'], ['G', 'toward nearest enemy']],
+  'tmm- range- nocover near');
+mk('Skirmisher', 3, '222', ['J', 'to most enemies in LOS, and woods/cover from most enemies'],
+  [['G', 'where most enemies in LOS'], ['G', 'into woods/cover from most enemies'], ['G', 'toward lowest TMM enemy'], ['G', 'toward nearest enemy']],
+  'destroy range- nocover near');
+mk('Skirmisher', 4, '318', ['G', 'to most enemies in LOS, and woods/cover from most enemies'],
+  [['S', 'If any enemies within 24" and LOS with TMM 1 or less'], ['G', 'into woods/cover from most enemies'], ['G', 'toward biggest threat enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'toward nearest enemy']],
+  'destroy tmm+ near');
+const SK56 = [['G', 'toward furthest enemy you can get behind'], ['J', 'toward furthest enemy'], ['J', 'into woods/cover from most enemies'], ['J', 'toward fewest enemies in LOS (min.1)']];
+mk('Skirmisher', 5, '459', ['J', 'toward furthest enemy, and no other enemies LOS or woods/cover from most enemies'], SK56, 'range- threat+ tmm- near');
+mk('Skirmisher', 6, '561', ['J', 'toward furthest enemy, and no other enemies LOS or woods/cover from most enemies'], SK56, 'range- tmm- threat+ near');
+mk('Skirmisher', 7, '584', ['J', 'to 18" from nearest enemy, and no other enemies LOS or woods/cover from most enemies'],
+  [['J', 'If the lowest health enemy has not yet moved, into woods/cover from most enemies'], ['G', 'toward lowest health enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'into woods/cover from most enemies'], ['G', 'toward furthest enemy']],
+  'destroy health- range- nocover near', true);
+mk('Skirmisher', 8, '913', ['J', 'to 18" from all enemies, and woods/cover from most enemies'],
+  [['J', 'If the highest MV enemy has not yet moved, into woods/cover from most enemies'], ['G', 'toward highest MV enemy'], ['G', 'into woods/cover from most enemies'], ['G', 'toward lowest health enemy you can get behind'], ['G', 'toward nearest enemy']],
+  'mv+ destroy threat+ tmm- near', true);
+/* STRIKER */
+mk('Striker', 1, '505', ['P', 'to 30" from all enemies, toward fewest enemies in LOS (min.0)'],
+  [['P', 'If no enemies within 24", to where fewest enemies in LOS (min.0)'], ['G', 'toward nearest enemy you can get behind'], ['G', 'toward lowest health enemy'], ['G', 'into woods/cover from most enemies'], ['G', 'toward nearest enemy']],
+  'destroy health- tmm- range- near');
+mk('Striker', 2, '701', ['J', 'to 24" from all enemies, and no LOS or most cover.'],
+  [['P', 'If no enemies within 24", to where fewest enemies in LOS (min.0)'], ['J', 'toward furthest enemy you can get behind'], ['G', 'toward lowest TMM enemy'], ['G', 'into woods/cover from most enemies'], ['G', 'toward nearest enemy']],
+  'destroy tmm- nocover near');
+mk('Striker', 3, '585', ['J', 'to 24" from all enemies, and no LOS or most cover.'],
+  [['P', 'If no enemies within 24", to where fewest enemies in LOS (min.0)'], ['G', 'toward highest TMM enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'into woods/cover from most enemies'], ['G', 'toward nearest enemy']],
+  'tmm+ destroy range- nocover near');
+mk('Striker', 4, '725', ['J', 'to 18" from all enemies, and no LOS or most cover.'],
+  [['J', 'If the lowest health enemy has not yet moved, to where woods/cover from most enemies'], ['G', 'toward highest health enemy you can destroy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'into woods/cover from most enemies'], ['G', 'toward furthest enemy']],
+  'destroy health+ range- nocover near', true);
+const ST56 = [['J', 'If the lowest health enemy has not yet moved, to where woods/cover from most enemies'], ['G', 'toward lowest health enemy'], ['G', 'toward fewest enemies in LOS (min.1)'], ['G', 'into woods/cover from most enemies'], ['G', 'toward furthest enemy']];
+mk('Striker', 5, '781', ['J', 'to 30" from all enemies, and no LOS or most cover.'], ST56, 'health- destroy range- nocover near', true);
+mk('Striker', 6, '890', ['J', 'to 24" from all enemies, and fewest enemies in LOS (min.1) or most cover.'], ST56, 'destroy health- range- nocover near', true);
+const ST78 = [['J', 'If the highest MV enemy has not yet moved, to where woods/cover from most enemies'], ['G', 'toward highest MV enemy']];
+mk('Striker', 7, '966', ['J', 'to 18" from all enemies, and woods/cover from most enemies'],
+  [...ST78, ['G', 'into woods/cover from most enemies'], ['G', 'toward lowest health enemy you can get behind'], ['G', 'toward nearest enemy']],
+  'mv+ threat+ tmm- near');
+mk('Striker', 8, '977', ['J', 'to 18" from all enemies, and woods/cover from most enemies'],
+  [...ST78, ['G', 'toward lowest TMM enemy you can get behind'], ['G', 'into woods/cover from most enemies'], ['G', 'toward nearest enemy']],
+  'mv+ destroy threat+ near');
+const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]));
+const DECK_IDS = d => CARDS.filter(c => c.deck === d).map(c => c.id);
+const MODE_NAME = { G: 'Ground move', J: 'Jump move', P: 'Sprint', S: 'Stand still' };
+
+/* ---------- flow AI definitions ---------- */
+const ROLES = DECKS;
+function defaultFlowParams() {
+  return {
+    Brawler: { standoff: 12, panic: 0, retreat: 25, agg: 3, bal: 5, target: 'lowest TMM → highest health → nearest', open: 'to 16" from all enemies, ending in woods/cover from most enemies (or without LOS)', openMode: 'J', chain: 'destroy range- tmm- nocover near' },
+    Sniper: { standoff: 30, panic: 12, retreat: 40, agg: 1, bal: 4, target: 'enemy with lowest health → lowest TMM (needs LOS) → nearest', open: 'to 36" from all enemies, with LOS to most enemies and woods/cover from most enemies', openMode: 'G', chain: 'destroy tmm- nocover range- near' },
+    Skirmisher: { standoff: 18, panic: 6, retreat: 35, agg: 2, bal: 5, target: 'lowest TMM → biggest threat → furthest enemy you can get behind', open: 'to 18" from the nearest enemy with LOS to it, in woods/cover from most enemies', openMode: 'G', chain: 'destroy range- nocover tmm- near' },
+    Striker: { standoff: 24, panic: 6, retreat: 50, agg: 3, bal: 5, target: 'lowest health enemy you can get behind → lowest health → nearest', open: 'to 24" from all enemies with no LOS or most cover (Sprint if no enemy is within 24")', openMode: 'J', chain: 'destroy health- range- nocover near' }
+  };
+}
+const rng = (a, b) => a > b ? '–' : (a === b ? String(a) : a + '–' + b);
+const FLOW = {
+  move: {
+    title: 'Movement flow', first: 'M1',
+    nodes: {
+      M0: { t: 'start', x: 2, y: 0, lines: () => ['START', 'unit activates'], next: 'M1' },
+      M1: { t: 'q', x: 2, y: 1, lines: p => ['Crippled?', 'HP ≤ ' + p.retreat + '% / weapon lost'],
+        q: p => `Is the unit crippled — Armor+Structure at or below ${p.retreat}% of full, or a critical hit that removed its main attack?`, hint: 'Always “Yes” when Forced Withdrawal applies.',
+        opts: [{ l: 'Yes', to: 'AR' }, { l: 'No', to: 'M2' }] },
+      M2: { t: 'q', x: 2, y: 2, lines: () => ['AI moves first?', 'no player unit moved yet'],
+        q: () => 'Has the AI team lost initiative, so that no player unit has moved yet?', hint: 'With unequal unit counts only the units that really move before the first player unit count.',
+        opts: [{ l: 'Yes', to: 'AO' }, { l: 'No', to: 'M3' }] },
+      M3: { t: 'q', x: 2, y: 3, lines: () => ['Kill reachable?', 'LOS + range + damage'],
+        q: () => 'Can this unit destroy an enemy this round? (A path to LOS and range exists, and damage at that range — plus OV if it has any — is at least the enemy’s remaining Armor+Structure.)', hint: 'Only enemies that already moved count (AI Golden Rule), unless none have moved.',
+        opts: [{ l: 'Yes', to: 'AK' }, { l: 'No', to: 'M4' }] },
+      M4: { t: 'q', x: 2, y: 4, lines: p => p.panic > 0 ? ['Enemy too close?', '< ' + p.panic + '"'] : ['Panic range?', 'never for this role'],
+        q: p => p.panic > 0 ? `Is any enemy closer than ${p.panic}"?` : 'This role never panics (panic range is 0) — answer No.', hint: 'Measure to the nearest enemy.',
+        opts: [{ l: 'Yes', to: 'AKI' }, { l: 'No', to: 'M5' }] },
+      M5: { t: 'roll', x: 2, y: 5, lines: p => ['Roll 1d6: stance', rng(1, p.agg) + ' Agg · ' + rng(p.agg + 1, p.bal) + ' Bal · ' + rng(p.bal + 1, 6) + ' Cau'],
+        q: p => `Roll 1d6 for the stance:  ${rng(1, p.agg)} Aggressive  ·  ${rng(p.agg + 1, p.bal)} Balanced  ·  ${rng(p.bal + 1, 6)} Cautious.`, hint: 'Roll a real die and press the result, or let the tool roll.',
+        opts: [{ l: 'Aggressive', to: 'ARU' }, { l: 'Balanced', to: 'M6' }, { l: 'Cautious', to: 'M7' }] },
+      M6: { t: 'q', x: 2, y: 6, lines: () => ['Balanced: good spot?', 'LOS + range + cover'],
+        q: () => 'Balanced stance: do I already have LOS and range to at least one enemy that has moved, and woods/cover from most enemies?', hint: 'If yes the unit simply stays put and shoots.',
+        opts: [{ l: 'Yes', to: 'AH' }, { l: 'No', to: 'M8' }] },
+      M8: { t: 'q', x: 2, y: 7, lines: () => ['Cover reachable?', 'keeps LOS to target'],
+        q: () => 'Can I reach woods/cover this move that keeps (or gives) LOS to my intended target?', hint: 'Woods beat partial cover.',
+        opts: [{ l: 'Yes', to: 'AC' }, { l: 'No', to: 'AA' }] },
+      M7: { t: 'q', x: 0, y: 5, lines: p => ['Cautious: keep range?', '≥ ' + p.standoff + '" + LOS'],
+        q: p => `Cautious stance: can I be at ${p.standoff}" or more from the nearest enemy and still have LOS to at least one enemy?`, hint: 'The unit wants to shoot without being shot.',
+        opts: [{ l: 'Yes', to: 'AS' }, { l: 'No', to: 'AF' }] },
+      AR: { t: 'end', x: 4, y: 1, label: 'Break contact', mode: () => 'G', facing: 'force',
+        text: () => 'Fall back by the shortest path toward your own deployment edge and end in woods/cover or out of LOS. Never finish closer to an enemy than you started. Sprint (P) instead if no attack would be possible anyway. Under Forced Withdrawal: leave the table when you reach the edge.' },
+      AO: { t: 'end', x: 4, y: 2, label: 'Opening position', mode: p => p.openMode, facing: 'force',
+        text: p => `Moving first: go ${p.open}. Ignore all other considerations this turn.` },
+      AK: { t: 'end', x: 4, y: 3, label: 'Finish it', mode: () => 'J', facing: 'target',
+        text: () => 'Move by the shortest path to a spot with LOS and range to the enemy you can destroy. If several spots work, take the one with woods/cover against that enemy, ideally behind it. In combat use OV only as needed to destroy.' },
+      AKI: { t: 'end', x: 4, y: 4, label: 'Kite', mode: () => 'J', facing: 'force',
+        text: p => `Move to ${p.standoff}" from all enemies by the shortest path (as far as MV allows if you cannot get there). Prefer higher elevation or cover that keeps LOS to at least 1 enemy.` },
+      ARU: { t: 'end', x: 4, y: 5, label: 'Rush', mode: () => 'G', facing: 'target',
+        text: p => `Move toward the preferred target (${p.target}) by the shortest path. If you can end behind it within short range, do so; otherwise stop just before base contact. Use cover only if it is on the way. Sprint (P) only if no enemy is within 24" and you could not shoot anyway.` },
+      AH: { t: 'end', x: 4, y: 6, label: 'Hold & fire', mode: () => 'S', facing: 'none',
+        text: () => 'Stand still. Keep your position, LOS and cover, and shoot in the combat phase.' },
+      AC: { t: 'end', x: 4, y: 7, label: 'Advance into cover', mode: () => 'J', facing: 'target',
+        text: p => `Move toward the preferred target (${p.target}) but end in woods (preferred) or partial cover against it, keeping LOS if possible. Jump only if that gains cover or elevation, otherwise walk.` },
+      AA: { t: 'end', x: 2, y: 8, label: 'Advance', mode: () => 'G', facing: 'target',
+        text: p => `Move toward the preferred target (${p.target}) by the shortest path until you are within ${p.standoff}" of it and have LOS. Do not stop earlier unless you reach cover there.` },
+      AS: { t: 'end', x: 0, y: 6, label: 'Move to firing line', mode: () => 'G', facing: 'force',
+        text: p => `Move to ${p.standoff}" from the nearest enemy with LOS to the fewest enemies (min. 1), ending in cover. Jump for elevation if you can.` },
+      AF: { t: 'end', x: 1, y: 6, label: 'Fall back to range', mode: () => 'G', facing: 'force',
+        text: p => `Move away to ${p.standoff}" from the nearest enemy, into woods/cover, preferably without LOS to anyone this turn.` }
+    }
+  },
+  combat: {
+    title: 'Combat flow', first: 'C1',
+    nodes: {
+      C0: { t: 'start', x: 1, y: 0, lines: () => ['START', 'combat phase'], next: 'C1' },
+      C1: { t: 'q', x: 1, y: 1, lines: () => ['Sprinted / shut down?', 'cannot attack'],
+        q: () => 'Did this unit Sprint this turn, or is it shut down? (Sprinting units cannot attack.)', hint: '', opts: [{ l: 'Yes', to: 'CN' }, { l: 'No', to: 'C2' }] },
+      C2: { t: 'q', x: 1, y: 2, lines: () => ['Valid target?', 'LOS + arc + range'],
+        q: () => 'Is any enemy in LOS, in the firing arc and within weapon range?', hint: 'Mark those enemies as “valid target” in the roster to use the calculator.', opts: [{ l: 'Yes', to: 'C3' }, { l: 'No', to: 'CN' }] },
+      C3: { t: 'q', x: 1, y: 3, lines: () => ['Can destroy?', 'normal damage'],
+        q: () => 'Can at least one in-range enemy be destroyed with normal damage if the attack hits?', hint: 'Compare damage at the range band with the enemy’s remaining Armor+Structure (including damage already marked).', opts: [{ l: 'Yes', to: 'TK' }, { l: 'No', to: 'C4' }] },
+      C4: { t: 'q', x: 1, y: 4, lines: () => ['Can destroy with OV?', 'OV > 0, heat ≤ 1'],
+        q: () => 'Is the unit’s OV above 0 with heat at 0–1, and would spending OV allow it to destroy an in-range enemy?', hint: 'Spend only as much OV as is needed.', opts: [{ l: 'Yes', to: 'TO' }, { l: 'No', to: 'C5' }] },
+      C5: { t: 'q', x: 1, y: 5, lines: () => ['Exposed enemy?', 'no cover vs. attack'],
+        q: () => 'Is any in-range enemy without cover — no partial cover and no woods benefit against this attack?', hint: '', opts: [{ l: 'Yes', to: 'TE' }, { l: 'No', to: 'C6' }] },
+      C6: { t: 'q', x: 1, y: 6, lines: () => ['Badly hurt?', '< ½ Armor+Structure'],
+        q: () => 'Does the unit have less than half of its Armor+Structure left?', hint: '', opts: [{ l: 'Yes', to: 'TS' }, { l: 'No', to: 'TR' }] },
+      CN: { t: 'end', x: 3, y: 1.5, label: 'No attack', mode: () => 'S', facing: 'none', text: () => 'The unit does not fire this turn (nothing in reach, or it sprinted).', chain: null },
+      TK: { t: 'end', x: 3, y: 3, label: 'Kill shot', mode: () => 'S', facing: 'none', text: () => 'Fire at the enemy that can be destroyed. If several, lowest health first, then nearest.', chain: () => 'destroy health- near' },
+      TO: { t: 'end', x: 3, y: 4, label: 'Kill shot with OV', mode: () => 'S', facing: 'none', ov: true, text: () => 'Fire at the enemy that can be destroyed using OV — spend only as much OV as is needed to destroy it.', chain: () => 'destroy health- near' },
+      TE: { t: 'end', x: 3, y: 5, label: 'Exposed target', mode: () => 'S', facing: 'none', text: () => 'Shoot the enemy that has no cover; ties are broken by the role’s own priorities.', chain: p => ['nocover'].concat(String(p.chain).split(/\s+/).filter(x => x && x !== 'nocover')).join(' ') },
+      TS: { t: 'end', x: 3, y: 6, label: 'Self-preservation', mode: () => 'S', facing: 'none', text: () => 'Cripple the biggest danger: highest Threat first, then lowest health, then nearest.', chain: () => 'threat+ health- near' },
+      TR: { t: 'end', x: 1, y: 7, label: 'Role priorities', mode: () => 'S', facing: 'none', text: () => 'No special situation: use the role’s default target priorities.', chain: p => p.chain }
+    }
+  }
+};
+
+/* ---------- state ---------- */
+const LS_KEY = 'aces-ai-companion-v1';
+let S;
+function newPile(type, name) {
+  const include = type === 'Custom' ? [] : DECK_IDS(type);
+  return { id: uid('p_'), name: name || (type + ' deck'), type, include, draw: shuffle(include), discard: [] };
+}
+function newFlow(role) { return { role: role || 'Brawler', move: { node: null, path: [], roll: null }, combat: { node: null, path: [], roll: null } }; }
+function newUnit(pileId, name, role) {
+  return { id: uid('u_'), name: name || 'AI unit', pileId, mode: 'cards', jump: false, cardId: null, moved: false, fired: false, faceUp: false,
+    useFirst: null, rowMan: {}, res: null, peek: false, dmg: { S: '', M: '', L: '', ov: '' }, flow: newFlow(role) };
+}
+function newFree() { const u = newUnit(null, 'Free draw'); u.id = 'free'; u.hist = []; return u; }
+function newEnemy(n) { return { id: uid('e_'), name: n || 'Player unit', alive: true, moved: false, los: true, dist: '', range: 'S', tmm: '', mv: '', pv: '', armor: '', structure: '', pend: '', threat: '', cover: false }; }
+function defaultState() {
+  const pile = newPile('Brawler');
+  const u = newUnit(pile.id, 'AI unit 1', 'Brawler');
+  return { app: 'aces-ai-companion', version: 1, theme: 'auto', tab: 'table', view: 'move', round: 1, phase: 'prep', aiFirst: false,
+    opts: { reshuffleEachRound: true, maskCombat: true }, piles: [pile], units: [u], enemies: [], flowParams: defaultFlowParams(),
+    activeUnit: null, free: newFree(), sandbox: { role: 'Brawler', kind: 'move', move: newFlow().move, combat: newFlow().combat }, libFilter: 'All', log: [] };
+}
+function save() { try { const o = clone(S); o.log = []; localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) { /* storage unavailable – ignore */ } }
+function loadSaved() { try { const t = localStorage.getItem(LS_KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; } }
+
+/* sanitise any loaded / imported state against defaults */
+function normalise(raw) {
+  const d = defaultState();
+  const o = Object.assign({}, d, raw || {});
+  o.opts = Object.assign({}, d.opts, (raw && raw.opts) || {});
+  const goodId = id => typeof id === 'string' && CARD[id];
+  o.piles = (Array.isArray(o.piles) ? o.piles : []).map(p => {
+    const type = (DECKS.includes(p.type) || p.type === 'Custom') ? p.type : 'Custom';
+    const include = (Array.isArray(p.include) ? p.include : (type === 'Custom' ? [] : DECK_IDS(type))).filter(goodId);
+    const inc = new Set(include);
+    return { id: String(p.id || uid('p_')), name: String(p.name || 'Pile'), type, include,
+      draw: (Array.isArray(p.draw) ? p.draw : include).filter(id => inc.has(id)), discard: (Array.isArray(p.discard) ? p.discard : []).filter(id => inc.has(id)) };
+  });
+  if (!o.piles.length) o.piles = d.piles;
+  const pileIds = new Set(o.piles.map(p => p.id));
+  const fixUnit = (u, isFree) => {
+    const b = newUnit(null, 'AI unit');
+    const x = Object.assign(b, u || {});
+    x.dmg = Object.assign({ S: '', M: '', L: '', ov: '' }, (u && u.dmg) || {});
+    x.flow = Object.assign(newFlow(), (u && u.flow) || {});
+    x.flow.move = Object.assign({ node: null, path: [], roll: null }, x.flow.move || {});
+    x.flow.combat = Object.assign({ node: null, path: [], roll: null }, x.flow.combat || {});
+    if (!ROLES.includes(x.flow.role)) x.flow.role = 'Brawler';
+    if (!goodId(x.cardId)) x.cardId = null;
+    x.mode = x.mode === 'flow' ? 'flow' : 'cards';
+    x.rowMan = (x.rowMan && typeof x.rowMan === 'object') ? x.rowMan : {};
+    if (isFree) { x.id = 'free'; x.hist = Array.isArray(x.hist) ? x.hist.filter(goodId).slice(0, 12) : []; x.mode = 'cards'; if (x.pileId && !pileIds.has(x.pileId)) x.pileId = null; }
+    else { x.id = String(x.id || uid('u_')); if (!pileIds.has(x.pileId)) x.pileId = o.piles[0].id; }
+    return x;
+  };
+  o.units = (Array.isArray(o.units) ? o.units : []).map(u => fixUnit(u, false));
+  o.free = fixUnit(o.free || {}, true);
+  o.enemies = (Array.isArray(o.enemies) ? o.enemies : []).map(e => Object.assign(newEnemy(), e || {}, { id: String((e && e.id) || uid('e_')) }));
+  const fp = defaultFlowParams();
+  o.flowParams = {};
+  ROLES.forEach(r => { o.flowParams[r] = Object.assign({}, fp[r], (raw && raw.flowParams && raw.flowParams[r]) || {}); ['standoff', 'panic', 'retreat', 'agg', 'bal'].forEach(k => { const v = num(o.flowParams[r][k]); o.flowParams[r][k] = v === null ? fp[r][k] : v; }); });
+  o.sandbox = Object.assign({ role: 'Brawler', kind: 'move' }, (raw && raw.sandbox) || {});
+  o.sandbox.move = Object.assign({ node: null, path: [], roll: null }, o.sandbox.move || {});
+  o.sandbox.combat = Object.assign({ node: null, path: [], roll: null }, o.sandbox.combat || {});
+  if (!ROLES.includes(o.sandbox.role)) o.sandbox.role = 'Brawler';
+  if (!['move', 'combat'].includes(o.sandbox.kind)) o.sandbox.kind = 'move';
+  if (!['auto', 'light', 'dark'].includes(o.theme)) o.theme = 'auto';
+  if (!['table', 'library', 'flow', 'manual'].includes(o.tab)) o.tab = 'table';
+  if (!['move', 'combat'].includes(o.view)) o.view = 'move';
+  if (!['prep', 'move', 'combat'].includes(o.phase)) o.phase = 'prep';
+  o.round = Math.max(1, parseInt(o.round, 10) || 1);
+  o.aiFirst = !!o.aiFirst;
+  if (!(o.activeUnit === 'free' || o.units.some(u => u.id === o.activeUnit))) o.activeUnit = null;
+  o.libFilter = (o.libFilter === 'All' || DECKS.includes(o.libFilter)) ? o.libFilter : 'All';
+  o.log = [];
+  o.app = 'aces-ai-companion'; o.version = 1;
+  return o;
+}
+
+/* ---------- accessors ---------- */
+const getUnit = id => id === 'free' ? S.free : S.units.find(u => u.id === id);
+const getPile = id => S.piles.find(p => p.id === id);
+const activeU = () => S.activeUnit ? getUnit(S.activeUnit) : null;
+const heldCards = () => S.units.map(u => u.cardId).concat([S.free.pileId ? S.free.cardId : null]).filter(Boolean);
+const inHand = pile => S.units.filter(u => u.pileId === pile.id && u.cardId).length + (S.free.pileId === pile.id && S.free.cardId ? 1 : 0);
+const effMode = (m, u) => (m === 'J' && u && !u.jump) ? 'G' : m;
+const logMsg = m => { S.log.unshift(`R${S.round}: ${m}`); S.log = S.log.slice(0, 80); };
+
+/* ---------- deck operations ---------- */
+function drawFromPile(pile) {
+  if (!pile || !pile.include.length) { toast('That pile has no cards – edit it first.'); return null; }
+  if (!pile.draw.length) {
+    if (pile.discard.length) { pile.draw = shuffle(pile.discard); pile.discard = []; toast(`“${pile.name}”: discard pile reshuffled.`); }
+    else {
+      const held = new Set(heldCards());
+      let avail = pile.include.filter(id => !held.has(id));
+      if (!avail.length) { avail = pile.include.slice(); toast(`“${pile.name}”: every card is in hand – a fresh deck was shuffled in (duplicates possible).`); }
+      pile.draw = shuffle(avail);
+    }
+  }
+  return pile.draw.shift() || null;
+}
+function resetUnitRound(u) { u.moved = false; u.fired = false; u.faceUp = false; u.useFirst = null; u.rowMan = {}; u.res = null; u.peek = false; u.flow.move = { node: null, path: [], roll: null }; u.flow.combat = { node: null, path: [], roll: null }; }
+function returnCardToPile(u, toDiscard) {
+  if (!u.cardId) return;
+  const pile = getPile(u.pileId);
+  if (pile) { if (toDiscard) pile.discard.push(u.cardId); else pile.draw = shuffle(pile.draw.concat(u.cardId)); }
+  u.cardId = null; u.faceUp = false; u.rowMan = {}; u.res = null; u.useFirst = null;
+}
+function dealRound() {
+  S.units.forEach(resetUnitRound);
+  S.enemies.forEach(e => { e.moved = false; });
+  let n = 0;
+  S.units.forEach(u => {
+    if (u.mode !== 'cards') return;
+    if (u.cardId) { returnCardToPile(u, false); }
+    const pile = getPile(u.pileId); const id = drawFromPile(pile);
+    if (id) { u.cardId = id; n++; }
+  });
+  S.phase = 'move'; S.view = 'move'; S.activeUnit = null;
+  logMsg(`Dealt ${n} card(s). ${S.aiFirst ? 'AI lost initiative → moves first.' : 'AI moves after the players.'}`);
+}
+function endRound() {
+  S.units.forEach(u => { if (u.cardId) returnCardToPile(u, !S.opts.reshuffleEachRound); resetUnitRound(u); });
+  if (S.opts.reshuffleEachRound) {
+    const held = new Set(heldCards());
+    S.piles.forEach(p => { p.draw = shuffle(p.include.filter(id => !held.has(id))); p.discard = []; });
+  }
+  S.enemies.forEach(e => { e.moved = false; e.pend = ''; });
+  logMsg('Round ended – cards returned' + (S.opts.reshuffleEachRound ? ' and decks reshuffled' : ' to discard') + '.');
+  S.round++; S.phase = 'prep'; S.activeUnit = null; S.view = 'move';
+}
+function orderedUnits(kind) {
+  const pend = S.units.filter(u => kind === 'move' ? !u.moved : !u.fired);
+  const cards = pend.filter(u => u.mode === 'cards' && u.cardId).sort((a, b) => CARD[a.cardId].prn - CARD[b.cardId].prn);
+  const flows = pend.filter(u => u.mode === 'flow');
+  return cards.concat(flows);
+}
+function activate(u, kind) {
+  S.activeUnit = u.id; S.view = kind;
+  if (u.mode === 'cards' && u.cardId) u.faceUp = true;
+  if (kind === 'move' && u.useFirst === null) u.useFirst = S.aiFirst && !S.enemies.some(e => e.alive && e.moved);
+}
+function nextUnit() {
+  const kind = S.phase === 'combat' ? 'combat' : 'move';
+  const list = orderedUnits(kind === 'move' ? 'move' : 'combat');
+  if (!list.length) { toast(kind === 'move' ? 'All AI units have moved.' : 'All AI units have attacked.'); return null; }
+  const u = list[0]; activate(u, kind);
+  logMsg(`${u.name} ${kind === 'move' ? 'activates' : 'attacks'}${u.cardId ? ' (card ' + CARD[u.cardId].pr + ')' : ' (flow)'}.`);
+  return u;
+}
+
+/* ---------- roster evaluation ---------- */
+const alive = () => S.enemies.filter(e => e.alive !== false);
+const names = a => a.map(e => e.name || '(unnamed)').join(' / ');
+function hp(e) {
+  const a = num(e.armor), s = num(e.structure); if (a === null && s === null) return null;
+  const p = num(e.pend) || 0, A = a || 0, St = s || 0;
+  const aRem = Math.max(0, A - p), sRem = St - Math.max(0, p - A);
+  return { aRem, sRem, health: Math.max(0, aRem + sRem) };
+}
+function stat(e, k) {
+  switch (k) {
+    case 'health': { const h = hp(e); return h ? h.health : null; }
+    case 'tmm': return num(e.tmm); case 'mv': return num(e.mv); case 'pv': return num(e.pv); case 'threat': return num(e.threat);
+    case 'range': return { S: 1, M: 2, L: 3 }[e.range] || null; case 'dist': return num(e.dist);
+  } return null;
+}
+function extreme(pool, k, d) {
+  const vals = pool.map(e => [e, stat(e, k)]).filter(x => x[1] !== null);
+  if (!vals.length) return { keep: pool, nodata: true };
+  const m = d === 'hi' ? Math.max(...vals.map(x => x[1])) : Math.min(...vals.map(x => x[1]));
+  return { keep: vals.filter(x => x[1] === m).map(x => x[0]), val: m };
+}
+function movePool() { const al = alive(); const mv = al.filter(e => e.moved); return mv.length ? mv : al; }
+const needsBoard = t => /woods|cover|LOS|behind|elevation|allies|facing|within LOS/i.test(t);
+function resolveTargetPhrase(text) {
+  const t = text.toLowerCase();
+  if (/has not yet moved/.test(t)) return null;
+  const pool = movePool(); if (!pool.length) return null;
+  let key, dir, label, m;
+  if ((m = t.match(/(lowest|highest|biggest)\s+(tmm|health|pv|mv|threat)\s+enemy/))) { key = m[2]; dir = m[1] === 'lowest' ? 'lo' : 'hi'; label = m[1] + ' ' + m[2].toUpperCase(); }
+  else if ((m = t.match(/enemy with (lowest|highest) (tmm|health|pv|mv|threat)/))) { key = m[2]; dir = m[1] === 'lowest' ? 'lo' : 'hi'; label = m[1] + ' ' + m[2].toUpperCase(); }
+  else if (/nearest enemy/.test(t)) { key = 'dist'; dir = 'lo'; label = 'nearest'; }
+  else if (/furthest enemy/.test(t)) { key = 'dist'; dir = 'hi'; label = 'furthest'; }
+  else return null;
+  const r = extreme(pool, key, dir);
+  return { label, names: r.nodata ? null : names(r.keep), tie: !r.nodata && r.keep.length > 1, nodata: r.nodata, caveat: /you can (get behind|destroy)/.test(t), single: !r.nodata && r.keep.length === 1 ? r.keep[0].name : null };
+}
+function evalCond(text) {
+  const t = text.toLowerCase().replace(/\.$/, '').trim();
+  if (!/^if /.test(t)) return null;
+  const R = (val, why) => ({ val, why });
+  const A = alive(); if (!A.length) return R(null, 'roster is empty');
+  const known = A.every(e => num(e.dist) !== null);
+  const within = d => A.filter(e => num(e.dist) !== null && num(e.dist) <= d);
+  const tmmOk = e => num(e.tmm) !== null && num(e.tmm) <= 1;
+  let m;
+  if ((m = t.match(/^if (?:the )?(lowest health|highest mv) enemy has not yet moved/))) {
+    const k = m[1] === 'lowest health' ? 'health' : 'mv', r = extreme(A, k, m[1] === 'lowest health' ? 'lo' : 'hi');
+    if (r.nodata) return R(null, 'enter ' + (k === 'mv' ? 'MV' : 'Armor/Struct') + ' in the roster');
+    const nm = r.keep.some(e => !e.moved);
+    return R(nm, `${m[1]} enemy = ${names(r.keep)} → ${nm ? 'has not moved' : 'already moved'}`);
+  }
+  if ((m = t.match(/^if lowest health enemy is further than (\d+)"/))) {
+    const r = extreme(A, 'health', 'lo'); if (r.nodata) return R(null, 'enter Armor/Struct');
+    if (r.keep.some(e => num(e.dist) === null)) return R(null, 'enter Dist');
+    return R(r.keep.every(e => num(e.dist) > +m[1]), `lowest health = ${names(r.keep)} at ${r.keep.map(e => e.dist).join('/')}"`);
+  }
+  if ((m = t.match(/^if any enemies within (\d+)"( and los with tmm 1 or less)?/))) {
+    const d = +m[1], w = within(d), sub = m[2] ? w.filter(e => e.los && tmmOk(e)) : w;
+    if (!sub.length && !known) return R(null, 'enter Dist for all enemies');
+    if (!sub.length && m[2] && w.some(e => e.los && num(e.tmm) === null)) return R(null, 'enter TMM');
+    return R(sub.length > 0, sub.length ? names(sub) + ' qualifies' : 'none qualify');
+  }
+  if ((m = t.match(/^if no enemies within (\d+)" and at least 1 enemy in los( with tmm 1 or less)?/))) {
+    const d = +m[1], w = within(d);
+    if (!w.length && !known) return R(null, 'enter Dist for all enemies');
+    const los = A.filter(e => e.los && (!m[2] || tmmOk(e)));
+    if (!los.length && m[2] && A.some(e => e.los && num(e.tmm) === null)) return R(null, 'enter TMM');
+    return R(!w.length && los.length > 0, `${w.length} within ${d}", ${los.length} in LOS${m[2] ? ' with TMM ≤ 1' : ''}`);
+  }
+  if ((m = t.match(/^if no enemies within (\d+)"/))) {
+    const w = within(+m[1]); if (!w.length && !known) return R(null, 'enter Dist for all enemies');
+    return R(!w.length, `${w.length} enemy within ${m[1]}"`);
+  }
+  if (/^if only 1 enemy in los/.test(t)) { const n = A.filter(e => e.los).length; return R(n === 1, `${n} marked as in LOS`); }
+  return R(null, 'board');
+}
+function canDestroy(e, u, useOV) {
+  const d = num(u.dmg[e.range]), h = hp(e); if (d === null || !h) return null;
+  return d + (useOV ? (num(u.dmg.ov) || 0) : 0) >= h.health && h.health > 0;
+}
+function canCrit(e, u) { const d = num(u.dmg[e.range]), h = hp(e); if (d === null || !h) return null; return d > h.aRem; }
+function runChain(chain, u, useOV) {
+  let pool = alive().filter(e => e.los);
+  const out = { trace: [], pool, empty: !pool.length };
+  if (!pool.length) return out;
+  for (const t of chain) {
+    const ex = iconExplain(t), step = { t, title: ex.title };
+    if (pool.length === 1) { step.note = 'already decided'; step.kept = names(pool); step.skip = true; out.trace.push(step); continue; }
+    let keep = null, note = '';
+    if (t.k === 'destroy' || t.k === 'crit') {
+      const fl = pool.map(e => t.k === 'destroy' ? canDestroy(e, u, useOV) : canCrit(e, u));
+      if (fl.some(f => f === null)) note = 'enter attacker damage (S/M/L) and the enemies’ Armor/Struct + Range';
+      else keep = pool.filter((e, i) => fl[i]);
+    } else if (t.k === 'nocover') keep = pool.filter(e => !e.cover);
+    else if (t.k === 'near') { const r = extreme(pool, 'dist', 'lo'); if (r.nodata) note = 'enter Dist in the roster'; else keep = r.keep; }
+    else { const r = extreme(pool, t.k, t.d); if (r.nodata) note = 'enter ' + ICONS[t.k].name + ' in the roster'; else keep = r.keep; }
+    if (keep && keep.length && keep.length < pool.length) { pool = keep; step.narrow = true; note = note || ''; }
+    else if (keep && !keep.length) note = 'no enemy matches – no narrowing';
+    else if (keep && keep.length === pool.length) note = 'all remaining enemies match – no narrowing';
+    step.note = note; step.kept = names(pool); out.trace.push(step);
+  }
+  out.pool = pool; return out;
+}
+
+/* ---------- flow runner logic ---------- */
+const flowParamsFor = role => S.flowParams[role] || S.flowParams.Brawler;
+const flowCur = (h, kind) => h[kind].node || FLOW[kind].first;
+const flowDone = (h, kind) => FLOW[kind].nodes[flowCur(h, kind)].t === 'end';
+function flowAnswer(h, kind, idx) {
+  const st = h[kind], cur = flowCur(h, kind), nd = FLOW[kind].nodes[cur];
+  if (!nd.opts || !nd.opts[idx]) return;
+  st.path.push({ node: cur, opt: idx, roll: st.roll || null }); st.node = nd.opts[idx].to; st.roll = null;
+}
+function flowUndo(h, kind) { const st = h[kind], last = st.path.pop(); st.node = last ? last.node : null; st.roll = null; }
+function flowReset(h, kind) { h[kind] = { node: null, path: [], roll: null }; }
+function flowRoll(h, kind, role) {
+  const p = flowParamsFor(role), r = 1 + Math.floor(Math.random() * 6);
+  h[kind].roll = r; flowAnswer(h, kind, r <= p.agg ? 0 : r <= p.bal ? 1 : 2);
+  h[kind].path[h[kind].path.length - 1].roll = r;
+}
+
+/* =====================================================================
+   RENDER – components
+   ===================================================================== */
+function modeIcon(m, u) {
+  const e = effMode(m, u), down = m !== e;
+  const t = down ? 'Jump row → Ground move (this unit has no jump jets)' : MODE_NAME[m];
+  return `<span class="mi ${e}${down ? ' down' : ''}" title="${esc(t)}" aria-label="${esc(t)}">${e}</span>`;
+}
+function iconHTML(t) {
+  const I = ICONS[t.k], ex = iconExplain(t);
+  if (!I.stat) return `<span class="hex" title="${esc(ex.title + ' – ' + ex.text)}">${I.label}</span>`;
+  return `<span class="stat ${t.d}" title="${esc(ex.title + ' – ' + ex.text)}"><span>${I.label}</span></span>`;
+}
+function chainHTML(chain) { return `<div class="icons">${chain.map(iconHTML).join('')}</div>`; }
+
+function cardFace(c, o) {
+  o = o || {}; const u = o.u;
+  const rows = c.rows.map((r, i) => `<div class="mrow"><span class="n">${i + 1}.</span>${modeIcon(r.m, u)}<span>${esc(r.t)}</span></div>`).join('');
+  const mask = o.mask ? `<div class="cmask"><b>Combat Phase hidden</b><span class="small">The rules say not to read it during the movement phase.</span><button class="btn sm" data-act="peek">Peek anyway</button></div>` : '';
+  return `<div class="acard" aria-label="${esc(c.deck)} card ${c.n} of 8, priority ${c.pr}">
+    <div class="head"><div class="t cond">Move phase<small>${c.deck} • ${c.n}/8</small></div><div class="prio">${c.pr}</div></div>
+    <div class="first${o.dimFirst ? ' dim' : ''}"><b>If first:</b>${modeIcon(c.first.m, u)}<span>${esc(c.first.t)}</span></div>
+    <div class="mrows" style="${o.dimRows ? 'opacity:.45' : ''}">${rows}</div>
+    <div class="cbt" style="${o.mask ? 'min-height:118px' : ''}">${mask}
+      <h4 class="cond">Combat phase ${c.ov ? '<span class="ovtag">Use OV</span>' : ''}</h4>
+      ${chainHTML(c.combat)}
+    </div></div>`;
+}
+function cardBack(c) { return `<div class="cardback" aria-label="Card back, priority ${c.pr}"><div class="big">${c.pr}</div><div class="nm cond">${c.deck}</div></div>`; }
+function miniCard(u) {
+  if (u.mode === 'flow') return `<div class="mini front" title="Flow AI – no card"><small>Flow<br>AI</small></div>`;
+  if (!u.cardId) return `<div class="mini none">no<br>card</div>`;
+  const c = CARD[u.cardId];
+  return u.faceUp ? `<div class="mini front${u.moved ? ' moved' : ''}" title="Face up"><span>${c.pr}<small>${c.deck.slice(0, 5)}</small></span></div>`
+    : `<div class="mini back${u.moved ? ' moved' : ''}" title="Face down – priority ${c.pr}"><span>${c.pr}</span></div>`;
+}
+
+/* ---------- Round panel ---------- */
+function renderRound() {
+  const ph = S.phase;
+  const steps = [['1 Initiative', ph === 'prep'], ['2 Movement', ph === 'move'], ['3 Combat', ph === 'combat'], ['4 End', false]];
+  const mvLeft = orderedUnits('move').length, cbLeft = orderedUnits('combat').length;
+  let btn;
+  if (ph === 'prep') btn = `<button class="btn primary" data-act="deal">Deal AI cards</button>`;
+  else if (ph === 'move') btn = `<button class="btn primary" data-act="next" ${mvLeft ? '' : 'disabled'}>Activate next unit</button><button class="btn" data-act="startcombat">Start combat phase →</button>`;
+  else btn = `<button class="btn primary" data-act="next" ${cbLeft ? '' : 'disabled'}>Next attacker</button>`;
+  const info = ph === 'move' ? `<span class="chip accent">${mvLeft} unit(s) still to move</span>` : ph === 'combat' ? `<span class="chip accent">${cbLeft} unit(s) still to attack</span>` : `<span class="chip">decks ready</span>`;
+  $('#p-round').innerHTML = `
+    <div class="panel-h"><h2>Round</h2>
+      <div class="roundnum"><button class="btn sm" data-act="round-" aria-label="Previous round">−</button><span>${S.round}</span><button class="btn sm" data-act="round+" aria-label="Next round">+</button></div></div>
+    <div class="steps">${steps.map(s => `<div class="step${s[1] ? ' on' : ''}">${s[0]}</div>`).join('')}</div>
+    <div class="row" style="margin-bottom:10px"><label class="chk"><input type="checkbox" data-bind="s:_:aiFirst" ${S.aiFirst ? 'checked' : ''}> AI lost initiative (AI moves first)</label></div>
+    <div class="row">${btn}<button class="btn" data-act="endround" ${ph === 'prep' && !heldCards().length ? 'title="Ends the round without dealing"' : ''}>End round</button></div>
+    <div style="margin-top:8px">${info}</div>`;
+}
+
+/* ---------- Piles ---------- */
+function renderPiles() {
+  const list = S.piles.map(p => {
+    const n = p.draw.length, hand = inHand(p);
+    return `<div class="pile">
+      <div class="stack ${n ? '' : 'empty-stack'}" aria-hidden="true">${n > 2 ? '<i style="transform:translate(4px,4px)"></i>' : ''}${n > 1 ? '<i style="transform:translate(2px,2px)"></i>' : ''}<i></i><b>${n}</b></div>
+      <div class="pile-info">
+        <input type="text" data-bind="pile:${p.id}:name" value="${esc(p.name)}" aria-label="Pile name">
+        <div class="small muted"><span class="chip deckchip ${p.type}">${p.type}</span> draw ${n} · discard ${p.discard.length} · in hand ${hand} · ${p.include.length} cards</div>
+        <div class="pile-actions">
+          <button class="btn sm primary" data-act="pile-draw" data-id="${p.id}">Draw</button>
+          <button class="btn sm" data-act="pile-shuffle" data-id="${p.id}" title="Return everything to the draw pile and shuffle">Shuffle</button>
+          <button class="btn sm" data-act="pile-edit" data-id="${p.id}">Edit</button>
+          <button class="btn sm danger" data-act="pile-del" data-id="${p.id}" aria-label="Remove pile">✕</button>
+        </div></div></div>`;
+  }).join('');
+  $('#p-piles').innerHTML = `<div class="panel-h"><h2>Decks (piles)</h2><button class="btn sm" data-act="pile-add">+ Add pile</button></div>
+    ${list || '<div class="empty">No piles yet. Add one.</div>'}
+    <p class="hint" style="margin:4px 0 0">Several units may share a pile. “Draw” opens a free draw without a unit.</p>`;
+}
+
+/* ---------- Options ---------- */
+function renderOptions() {
+  $('#p-options').innerHTML = `<div class="panel-h"><h2>Options &amp; presets</h2></div>
+    <div class="row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <label class="chk"><input type="checkbox" data-bind="o:_:reshuffleEachRound" ${S.opts.reshuffleEachRound ? 'checked' : ''}> Reshuffle every deck at end of round (official rule)</label>
+      <label class="chk"><input type="checkbox" data-bind="o:_:maskCombat" ${S.opts.maskCombat ? 'checked' : ''}> Hide the combat strip during movement</label>
+      <div class="row"><select id="presetSel" aria-label="Scenario preset"><option value="mg">Meet &amp; Greet (2 AI units)</option><option value="cos">Clash of Steel (5 AI units)</option></select>
+        <button class="btn sm" data-act="preset">Load scenario</button></div>
+      <button class="btn sm" data-act="std-decks">Add the four standard decks</button>
+    </div>`;
+}
+function renderLog() { $('#log').innerHTML = S.log.length ? S.log.map(l => `<div>${esc(l)}</div>`).join('') : '<div>Nothing yet.</div>'; }
+
+/* ---------- Units ---------- */
+function renderUnits() {
+  const kind = S.phase === 'combat' ? 'combat' : 'move';
+  const tiles = S.units.map(u => {
+    const done = kind === 'combat' ? u.fired : u.moved;
+    const pileOpts = S.piles.map(p => `<option value="${p.id}" data-pile="${p.id}" ${p.id === u.pileId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+    const roleOpts = ROLES.map(r => `<option ${u.flow.role === r ? 'selected' : ''}>${r}</option>`).join('');
+    const chips = [u.moved ? '<span class="chip ok">moved</span>' : '', u.fired ? '<span class="chip ok">fired</span>' : ''].join(' ');
+    return `<div class="unit${S.activeUnit === u.id ? ' active' : ''}${done && S.phase !== 'prep' ? ' finished' : ''}" data-act="unit-select" data-id="${u.id}">
+      <div class="unit-top">${miniCard(u)}
+        <div class="unit-main">
+          <input type="text" data-bind="u:${u.id}:name" value="${esc(u.name)}" aria-label="Unit name">
+          <div class="row">
+            <select data-bind="u:${u.id}:mode" aria-label="AI mode"><option value="cards" ${u.mode === 'cards' ? 'selected' : ''}>Cards</option><option value="flow" ${u.mode === 'flow' ? 'selected' : ''}>Flow AI</option></select>
+            ${u.mode === 'cards' ? `<select data-bind="u:${u.id}:pileId" aria-label="Deck pile">${pileOpts}</select>` : `<select data-bind="u:${u.id}:flow.role" aria-label="Flow role">${roleOpts}</select>`}
+          </div>
+          <div class="row"><label class="chk"><input type="checkbox" data-bind="u:${u.id}:jump" ${u.jump ? 'checked' : ''}> Jump-capable</label>${chips}</div>
+        </div></div>
+      <div class="unit-actions">
+        ${u.mode === 'cards' ? (u.cardId ? `<button class="btn sm" data-act="unit-return" data-id="${u.id}">Return card</button>` : `<button class="btn sm" data-act="unit-draw" data-id="${u.id}">Draw</button>`) : ''}
+        <button class="btn sm primary" data-act="unit-activate" data-id="${u.id}">Activate</button>
+        <button class="btn sm" data-act="unit-done" data-id="${u.id}">${done ? 'Undo done' : 'Done'}</button>
+        <button class="btn sm danger" data-act="unit-del" data-id="${u.id}" aria-label="Remove unit">✕</button>
+      </div></div>`;
+  }).join('');
+  $('#p-units').innerHTML = `<div class="panel-h"><h2>AI units</h2><button class="btn sm" data-act="unit-add">+ Add AI unit</button></div>
+    ${tiles ? `<div class="units">${tiles}</div>` : '<div class="empty">No AI units yet. Add one, assign a pile, then deal cards.</div>'}`;
+}
+
+/* ---------- Active unit ---------- */
+function facingHint(text, mode, resolved) {
+  if (mode === 'S') return 'No movement – the unit stays where it is.';
+  const t = text.toLowerCase();
+  const single = /\benemy\b/.test(t);
+  if (single) return `Turn to face that enemy${resolved && resolved.single ? ' (' + resolved.single + ')' : ''}.`;
+  return 'Turn to face the majority of enemy units (if unclear: the units with the highest PV).';
+}
+function targetChips(text) {
+  const r = resolveTargetPhrase(text); let h = '';
+  if (r) {
+    if (r.nodata) h += `<span class="chip warn" title="Fill in the roster">? roster data missing</span>`;
+    else h += `<span class="chip accent" title="${esc(r.label)}">→ ${esc(r.names)}${r.tie ? ' (tie – next row decides)' : ''}${r.caveat ? ' · check “you can …” on board' : ''}</span>`;
+  }
+  if (needsBoard(text)) h += `<span class="chip" title="Needs a look at the map">board</span>`;
+  return h;
+}
+function renderActive() {
+  const el = $('#p-active'), u = activeU();
+  if (!u) { el.innerHTML = `<div class="panel-h"><h2>Active unit</h2></div><div class="empty">Nothing selected. Press <b>Deal AI cards</b> then <b>Activate next unit</b>, click a unit tile, or <b>Draw</b> from a pile for a free draw.</div>`; return; }
+  const isFree = u.id === 'free', c = u.cardId ? CARD[u.cardId] : null;
+  const pileOpts = S.piles.map(p => `<option value="${p.id}" data-pile="${p.id}" ${u.pileId === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+  const head = `<div class="panel-h"><h2>Active unit</h2><div class="row">
+      <span class="chip accent"><b data-name-of="${u.id}">${esc(isFree ? 'Free draw' : u.name)}</b></span>
+      ${c ? `<span class="chip deckchip ${c.deck}">${c.deck} ${c.n}/8 · priority ${c.pr}</span>` : ''}
+      ${u.mode === 'flow' ? `<span class="chip">Flow AI · ${u.flow.role}</span>` : ''}</div></div>`;
+  const free = isFree ? `<div class="row" style="margin-bottom:10px"><select data-bind="u:free:pileId" aria-label="Pile for free draw"><option value="">– pile –</option>${pileOpts}</select>
+      <button class="btn sm primary" data-act="free-draw">Draw</button><button class="btn sm" data-act="free-return" ${u.cardId ? '' : 'disabled'}>Return card</button>
+      <label class="chk"><input type="checkbox" data-bind="u:free:jump" ${u.jump ? 'checked' : ''}> Jump-capable</label>
+      ${u.hist.length ? `<span class="small muted">history:</span>${u.hist.map(id => `<button class="btn sm ghost" data-act="free-card" data-card="${id}">${CARD[id].pr}</button>`).join('')}` : ''}</div>` : '';
+  const tabs = `<div class="subtabs" role="tablist"><button class="subtab" role="tab" aria-selected="${S.view === 'move'}" data-act="view" data-view="move">Movement</button>
+      <button class="subtab" role="tab" aria-selected="${S.view === 'combat'}" data-act="view" data-view="combat">Combat</button></div>`;
+  let body;
+  if (u.mode === 'flow') body = `<div class="active-grid" style="grid-template-columns:1fr"><div><div id="attacker"></div><div id="interp"></div></div></div>`;
+  else if (!c) body = `<div class="empty">${isFree ? 'Pick a pile and press Draw.' : 'This unit has no card yet. Deal cards, or press “Draw” on the unit tile.'}</div>`;
+  else {
+    const showFace = isFree || u.faceUp || S.view === 'combat';
+    const mask = S.view === 'move' && S.opts.maskCombat && !isFree && !u.peek;
+    const left = showFace ? cardFace(c, { u, mask, dimFirst: !u.useFirst && S.view === 'move', dimRows: !!u.useFirst && S.view === 'move' })
+      : cardBack(c) + `<div class="row" style="margin-top:8px"><button class="btn" data-act="flip">Flip card</button></div>`;
+    const firstCtl = S.view === 'move' ? `<div class="row" style="margin-top:10px"><label class="chk"><input type="checkbox" data-act="usefirst" ${u.useFirst ? 'checked' : ''}> Use “If first” box (no player unit has moved yet)</label></div>` : '';
+    const doneCtl = isFree ? '' : `<div class="row" style="margin-top:10px"><button class="btn primary" data-act="done-next">${S.phase === 'combat' ? 'Done – next attacker' : 'Done – next unit'}</button></div>`;
+    body = `<div class="active-grid"><div>${left}${firstCtl}${doneCtl}</div>
+      <div><div id="attacker"></div><div id="interp"></div></div></div>`;
+  }
+  el.innerHTML = head + free + tabs + body;
+  renderAttacker(); refreshDerived();
+}
+function renderAttacker() {
+  const el = $('#attacker'), u = activeU(); if (!el) return;
+  if (!u || S.view !== 'combat') { el.innerHTML = ''; return; }
+  const f = (k, l) => `<label>${l}<input type="number" min="0" step="1" data-bind="u:${u.id}:dmg.${k}" value="${esc(u.dmg[k])}"></label>`;
+  el.innerHTML = `<div class="attacker"><b class="small" style="align-self:center">Attacker stats</b>${f('S', 'Dmg S')}${f('M', 'Dmg M')}${f('L', 'Dmg L')}${f('ov', 'OV')}
+    <span class="hint" style="flex:1;min-width:180px">Optional. Lets the calculator decide “Can Destroy” / “Can Crit”.</span></div>`;
+}
+function refreshDerived() {
+  const el = $('#interp'), u = activeU(); if (!el || !u) return;
+  el.innerHTML = u.mode === 'flow' ? interpFlow(u) : (u.cardId ? (S.view === 'move' ? interpMove(u) : interpCombat(u)) : '');
+}
+
+function interpMove(u) {
+  const c = CARD[u.cardId], first = !!u.useFirst;
+  let h = `<div class="interp"><h3>Movement rows</h3>`;
+  const fr = resolveTargetPhrase(c.first.t);
+  h += `<div class="irow${first ? ' chosen' : ' skip'}"><div class="num">★</div>
+      <div>${modeIcon(c.first.m, u)} <span class="tx">If first: ${esc(c.first.t)}</span></div>
+      <div class="sub">${first ? '<span class="chip accent">applies – ignore the numbered rows</span>' : '<span class="chip">not first – skip</span>'}${targetChips(c.first.t)}</div></div>`;
+  c.rows.forEach((r, i) => {
+    const cond = evalCond(r.t) || (r.m === 'S' ? { val: null, why: 'board' } : null);
+    const man = u.rowMan[i];
+    let status = '', skip = false;
+    if (cond) {
+      const eff = man === 'y' ? true : man === 'n' ? false : cond.val;
+      if (eff === false) skip = true;
+      const auto = cond.val === null ? `<span class="chip warn" title="${esc(cond.why)}">? check${cond.why && cond.why !== 'board' ? ' – ' + esc(cond.why) : ''}</span>` : cond.val ? `<span class="chip ok" title="${esc(cond.why)}">true · ${esc(cond.why)}</span>` : `<span class="chip bad" title="${esc(cond.why)}">false · ${esc(cond.why)}</span>`;
+      status = `${auto}<span class="tri" role="group" aria-label="Override condition"><button class="y${man === 'y' ? ' on' : ''}" data-act="rowyes" data-i="${i}">Yes</button><button class="n${man === 'n' ? ' on' : ''}" data-act="rowno" data-i="${i}">No</button></span>`;
+    }
+    const chosen = !first && u.res === i;
+    h += `<div class="irow${first || skip ? ' skip' : ''}${chosen ? ' chosen' : ''}"><div class="num">${i + 1}</div>
+      <div>${modeIcon(r.m, u)} <span class="tx">${esc(r.t)}</span></div>
+      <div class="sub">${status}${targetChips(r.t)}${first ? '' : `<button class="btn sm${chosen ? ' primary' : ''}" data-act="rowres" data-i="${i}">${chosen ? '✓ last row used' : 'Last row used'}</button>`}</div></div>`;
+  });
+  // result
+  let rm = null, rt = null, rres = null;
+  if (first) { rm = c.first.m; rt = c.first.t; rres = fr; }
+  else if (u.res !== null && c.rows[u.res]) { rm = c.rows[u.res].m; rt = c.rows[u.res].t; rres = resolveTargetPhrase(rt); }
+  if (rm) {
+    const em = effMode(rm, u), extra = em === 'P' ? '<div class="small">A sprinting unit cannot attack this turn.</div>' : em === 'S' ? '<div class="small">Stand still: the unit does not move this turn.</div>' : '';
+    h += `<div class="result"><div class="big">${modeIcon(rm, u)} ${MODE_NAME[em]}${rm !== em ? ' <span class="chip">Jump row, no jump jets</span>' : ''}</div>
+      <div style="margin:4px 0">${esc(rt)}</div>${extra}<div class="small muted">Facing: ${esc(facingHint(rt, em, rres))}</div></div>`;
+  } else h += `<div class="result"><div class="big">Resolve the rows</div><div class="small">Go through the rows in order. Press <b>Last row used</b> on the highest row you needed to reach one clear destination — its icon gives the movement mode.</div></div>`;
+  return h + `<p class="hint">Remember the Golden Rules: shortest path, aim for LOS + range to a moved enemy, prefer woods over partial cover, and if the card leaves options open pick what benefits the AI most.</p></div>`;
+}
+function chainExplainHTML(chain, ov) {
+  return `<div class="chain">${chain.map((t, i) => { const ex = iconExplain(t); return `<div class="it"><span class="no">${i + 1}</span><div><div style="display:flex;gap:8px;align-items:center"><span style="transform:scale(.8);transform-origin:left center;display:inline-flex;min-width:46px">${iconHTML(t)}</span><b>${esc(ex.title)}</b></div><div class="small muted">${esc(ex.text)}</div></div></div>`; }).join('')}</div>
+    ${ov ? '<div class="callout" style="margin-top:8px"><b>Use OV:</b> apply as much Overheat as needed — and no more — to be able to destroy the target if the attack hits.</div>' : ''}`;
+}
+function calcHTML(chain, u, ov) {
+  const r = runChain(chain, u, ov);
+  if (r.empty) return `<div class="empty">No valid target. Add the player units to the roster and tick <b>Valid target</b> for those in LOS, arc and range.</div>`;
+  let h = `<div><div class="small muted" style="margin-bottom:4px">Candidates: ${esc(names(alive().filter(e => e.los)))}</div>`;
+  r.trace.forEach((s, i) => { h += `<div class="tr${s.narrow ? ' narrow' : ''}"><b>${i + 1}. ${esc(s.title)}</b> → ${s.skip ? '<span class="muted">skipped (decided)</span>' : esc(s.kept)}${s.note && !s.skip ? ` <span class="muted small">(${esc(s.note)})</span>` : ''}</div>`; });
+  h += r.pool.length === 1 ? `<div class="tr final"><b>Target: ${esc(names(r.pool))}</b></div>` : `<div class="tr final"><b>Still tied: ${esc(names(r.pool))}</b> — choose whichever benefits the AI unit most.</div>`;
+  return h + '</div>';
+}
+function interpCombat(u) {
+  const c = CARD[u.cardId];
+  return `<div class="interp"><h3>Target priorities (left → right)</h3>${chainExplainHTML(c.combat, c.ov)}
+    <h3 style="margin-top:14px">Target calculator</h3>${calcHTML(c.combat, u, c.ov)}</div>`;
+}
+
+/* ---------- Roster ---------- */
+function renderRoster() {
+  const th = (l, t) => `<th title="${esc(t)}">${l}</th>`;
+  const rows = S.enemies.map(e => {
+    const b = (f, type, w) => `<input type="${type || 'number'}" data-bind="e:${e.id}:${f}" value="${esc(e[f])}" ${type === 'text' ? '' : 'step="any"'} aria-label="${f}">`;
+    const ck = f => `<input type="checkbox" data-bind="e:${e.id}:${f}" ${e[f] ? 'checked' : ''} aria-label="${f}">`;
+    const h = hp(e);
+    return `<tr class="${e.alive === false ? 'dead' : ''}" data-row="${e.id}"><td>${ck('alive')}</td><td>${b('name', 'text')}</td><td>${ck('moved')}</td><td>${ck('los')}</td><td>${b('dist')}</td>
+      <td><select data-bind="e:${e.id}:range" aria-label="range band"><option ${e.range === 'S' ? 'selected' : ''}>S</option><option ${e.range === 'M' ? 'selected' : ''}>M</option><option ${e.range === 'L' ? 'selected' : ''}>L</option></select></td>
+      <td>${b('tmm')}</td><td>${b('mv')}</td><td>${b('pv')}</td><td>${b('armor')}</td><td>${b('structure')}</td><td>${b('pend')}</td><td>${b('threat')}</td><td>${ck('cover')}</td>
+      <td class="hp" data-hp="${e.id}">${h ? h.health : '–'}</td><td><button class="btn sm danger" data-act="enemy-del" data-id="${e.id}" aria-label="Remove">✕</button></td></tr>`;
+  }).join('');
+  $('#p-roster').innerHTML = `<div class="panel-h"><h2>Player units (roster) – optional</h2><button class="btn sm" data-act="enemy-add">+ Add player unit</button></div>
+    ${S.enemies.length ? `<div class="tbl-wrap"><table class="roster"><thead><tr>
+      ${th('Alive', 'Unit is still on the table')}${th('Name', 'Unit name')}${th('Moved', 'Has moved this round (the AI prefers enemies that have moved)')}${th('Valid target', 'In LOS, firing arc and weapon range of the active AI unit')}
+      ${th('Dist″', 'Distance in inches to the active AI unit')}${th('Range', 'Range band to the active AI unit: S / M / L')}${th('TMM', 'Current Target Movement Modifier')}${th('MV″', 'Highest movement value')}${th('PV', 'Point value')}
+      ${th('Armor', 'Current armor')}${th('Struct', 'Current structure')}${th('Pend', 'Damage already marked this round (reduces armor first, then structure)')}${th('Threat', 'Max damage it can inflict this turn')}
+      ${th('Cover', 'Has partial cover / woods benefit against the active AI unit’s attack')}${th('Health', 'Armor + Structure − pending')}<th></th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="hint" style="margin:8px 0 0">Distances, range band, “valid target” and cover are relative to the <b>active</b> AI unit – update them when you switch units.</p>`
+      : `<div class="empty">Optional: list the player units here and the tool resolves “highest health enemy”, “nearest enemy” … and the combat target chain for you.</div>`}`;
+}
+
+/* =====================================================================
+   RENDER – flow AI, library, legends, dialogs
+   ===================================================================== */
+function facingFlow(f) {
+  return f === 'target' ? 'Turn to face the enemy you moved toward.' : f === 'force' ? 'Turn to face the majority of enemy units (if unclear: highest PV).' : 'No movement.';
+}
+function runnerHTML(h, kind, ref, role, u) {
+  const F = FLOW[kind], st = h[kind], cur = flowCur(h, kind), nd = F.nodes[cur], p = flowParamsFor(role);
+  const crumbs = st.path.map(s => { const n = F.nodes[s.node]; return `<span class="c">${esc(n.lines(p)[0])}: <b>${esc(n.opts[s.opt].l)}${s.roll ? ' (rolled ' + s.roll + ')' : ''}</b></span>`; }).join(' → ');
+  const data = `data-ref="${ref}" data-kind="${kind}"`;
+  let main;
+  if (nd.t === 'end') {
+    if (kind === 'move') {
+      const m = nd.mode(p), em = u ? effMode(m, u) : m;
+      main = `<div class="result"><div class="big">${modeIcon(m, u)} ${esc(nd.label)} <span class="chip">${MODE_NAME[em]}${!u && m === 'J' ? ' (Ground if no jump jets)' : ''}</span></div>
+        <div style="margin:6px 0">${esc(nd.text(p))}</div>
+        <div class="small muted">Facing: ${esc(em === 'S' ? 'No movement – stays put.' : facingFlow(nd.facing))}</div>${em === 'P' ? '<div class="small">A sprinting unit cannot attack this turn.</div>' : ''}</div>`;
+    } else {
+      const chain = nd.chain ? parseChain(nd.chain(p)) : null;
+      main = `<div class="result"><div class="big">${esc(nd.label)}</div><div style="margin:6px 0">${esc(nd.text(p))}</div>
+        ${chain ? `<div class="small muted">Target priorities:</div>${chainHTML(chain)}` : ''}${nd.ov ? '<div class="small"><b>Use OV</b> only as much as needed to destroy.</div>' : ''}</div>`;
+    }
+  } else {
+    const opts = nd.opts.map((o, i) => `<button class="btn ${nd.t === 'roll' ? '' : (i === 0 ? 'primary' : '')}" data-act="fanswer" data-i="${i}" ${data}>${esc(o.l)}</button>`).join('');
+    main = `<div class="q">${esc(nd.q(p))}</div>${nd.hint ? `<div class="hint">${esc(nd.hint)}</div>` : ''}
+      <div class="opts">${nd.t === 'roll' ? `<button class="btn primary" data-act="froll" ${data}>Roll 1d6 for me</button><span class="muted">or choose:</span>` : ''}${opts}</div>`;
+  }
+  return `<div class="runner">${main}
+    <div class="row"><button class="btn sm" data-act="fundo" ${data} ${st.path.length ? '' : 'disabled'}>← Undo</button><button class="btn sm" data-act="freset" ${data}>Restart</button></div>
+    ${crumbs ? `<div class="crumbs">Path: ${crumbs}</div>` : ''}</div>`;
+}
+function interpFlow(u) {
+  const kind = S.view === 'combat' ? 'combat' : 'move', h = u.flow, p = flowParamsFor(h.role);
+  let out = `<div class="interp"><h3>${FLOW[kind].title} · ${esc(h.role)}</h3>${runnerHTML(h, kind, u.id, h.role, u)}`;
+  if (kind === 'combat' && flowDone(h, 'combat')) {
+    const nd = FLOW.combat.nodes[flowCur(h, 'combat')];
+    if (nd.chain) { const chain = parseChain(nd.chain(p)); out += `<h3 style="margin-top:14px">Target priorities</h3>${chainExplainHTML(chain, !!nd.ov)}<h3 style="margin-top:14px">Target calculator</h3>${calcHTML(chain, u, !!nd.ov)}`; }
+  }
+  return out + '</div>';
+}
+
+function flowSVG(kind, h, p) {
+  const F = FLOW[kind], N = F.nodes, st = h[kind], cur = flowCur(h, kind);
+  const visN = new Set(st.path.map(s => s.node)); visN.add(cur); visN.add(Object.keys(N)[0]);
+  const visE = new Set(st.path.map(s => s.node + '>' + N[s.node].opts[s.opt].to));
+  if (st.path.length || cur !== F.first) visE.add(Object.keys(N)[0] + '>' + F.first);
+  const X = x => 110 + x * 240, Y = y => 46 + y * 104, W = 200, H = 62;
+  let maxX = 0, maxY = 0; Object.values(N).forEach(n => { maxX = Math.max(maxX, n.x); maxY = Math.max(maxY, n.y); });
+  const VW = X(maxX) + W / 2 + 14, VH = Y(maxY) + H / 2 + 14;
+  const edgePt = (c, tx, ty) => { const dx = tx - c.x, dy = ty - c.y; const sx = dx ? (W / 2 + 2) / Math.abs(dx) : Infinity, sy = dy ? (H / 2 + 2) / Math.abs(dy) : Infinity; const s = Math.min(sx, sy); return { x: c.x + dx * s, y: c.y + dy * s }; };
+  let edges = '', nodes = '';
+  const edgeList = [];
+  Object.entries(N).forEach(([id, n]) => { if (n.next) edgeList.push([id, n.next, '', false]); (n.opts || []).forEach(o => edgeList.push([id, o.to, o.l, true])); });
+  edgeList.forEach(([a, b, lab]) => {
+    const A = { x: X(N[a].x), y: Y(N[a].y) }, B = { x: X(N[b].x), y: Y(N[b].y) };
+    const s = edgePt(A, B.x, B.y), e = edgePt(B, A.x, A.y), vis = visE.has(a + '>' + b);
+    edges += `<line class="edge${vis ? ' vis' : ''}" x1="${s.x}" y1="${s.y}" x2="${e.x}" y2="${e.y}" marker-end="url(#${vis ? 'amv' : 'am'})"/>`;
+    if (lab) {
+      const vert = Math.abs(e.y - s.y) > Math.abs(e.x - s.x), lx = s.x + (e.x - s.x) * .3, ly = s.y + (e.y - s.y) * .3;
+      edges += vert ? `<text class="elab${vis ? ' vis' : ''}" x="${lx + 8}" y="${ly + 4}">${esc(lab)}</text>` : `<text class="elab${vis ? ' vis' : ''}" x="${lx}" y="${ly - 7}" text-anchor="middle">${esc(lab)}</text>`;
+    }
+  });
+  Object.entries(N).forEach(([id, n]) => {
+    const cx = X(n.x), cy = Y(n.y), cls = `nd ${n.t}${visN.has(id) ? ' vis' : ''}${id === cur ? ' cur' : ''}`;
+    let shape, l1, l2, tip;
+    if (n.t === 'start') { shape = `<ellipse class="shape" cx="${cx}" cy="${cy}" rx="78" ry="26"/>`; [l1, l2] = n.lines(p); tip = l1; }
+    else if (n.t === 'end') {
+      shape = `<rect class="shape" x="${cx - W / 2}" y="${cy - H / 2}" width="${W}" height="${H}" rx="31"/>`;
+      l1 = n.label; const m = kind === 'move' ? n.mode(p) : null; l2 = kind === 'move' ? MODE_NAME[m] : 'target chain'; tip = n.label + ' – ' + n.text(p);
+      if (kind === 'move') { const col = { G: 'var(--mi-g-bg)', J: 'var(--red)', P: 'var(--yellow)', S: 'var(--mi-s-bg)' }[m], tc = { G: 'var(--mi-g-text)', J: '#fff', P: '#111', S: '#fff' }[m];
+        shape += `<g class="tag"><circle cx="${cx - W / 2 + 25}" cy="${cy}" r="13" fill="${col}" stroke="var(--card-line)"/><text x="${cx - W / 2 + 25}" y="${cy + 4.5}" text-anchor="middle" fill="${tc}" style="fill:${tc}">${m}</text></g>`; }
+    } else {
+      const x0 = cx - W / 2, x1 = cx + W / 2, y0 = cy - H / 2, y1 = cy + H / 2, k = 20;
+      shape = `<polygon class="shape" points="${x0},${cy} ${x0 + k},${y0} ${x1 - k},${y0} ${x1},${cy} ${x1 - k},${y1} ${x0 + k},${y1}"/>`;
+      [l1, l2] = n.lines(p); tip = n.q(p);
+    }
+    const tx = n.t === 'end' && kind === 'move' ? cx + 14 : cx;
+    nodes += `<g class="${cls}"><title>${esc(tip)}</title>${shape}<text class="l1" x="${tx}" y="${cy - 3}">${esc(l1)}</text><text class="l2" x="${tx}" y="${cy + 14}">${esc(l2)}</text></g>`;
+  });
+  return `<svg class="flow" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${esc(F.title)} flow chart">
+    <defs><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+    <marker id="amv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker></defs>${edges}${nodes}</svg>`;
+}
+function renderFlowDerived() {
+  const sb = S.sandbox, p = flowParamsFor(sb.role);
+  $('#flowChart').innerHTML = flowSVG(sb.kind, sb, p);
+  $('#flowTitle').textContent = FLOW[sb.kind].title + ' – ' + sb.role;
+  $('#flowKindSwitch').innerHTML = `<button class="subtab" aria-selected="${sb.kind === 'move'}" data-act="flow-kind" data-kind="move">Movement</button><button class="subtab" aria-selected="${sb.kind === 'combat'}" data-act="flow-kind" data-kind="combat">Combat</button>`;
+  $('#p-flowrunner').innerHTML = `<div class="panel-h"><h2>Practice runner</h2></div>
+    <div class="row" style="margin-bottom:10px"><label class="small muted">Role</label><select data-bind="sb:_:role">${ROLES.map(r => `<option ${sb.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select><span class="hint">Try the flow here without a unit.</span></div>
+    ${runnerHTML(sb, sb.kind, 'sb', sb.role, null)}`;
+}
+function renderFlowTab() {
+  $('#p-flowintro').innerHTML = `<div class="panel-h"><h2>Alternative AI: decision flow</h2></div>
+    <p style="margin:0;max-width:95ch">Instead of drawing cards, a unit answers a short chain of questions. Role parameters (standoff range, panic range, retreat threshold, stance dice) give a Brawler, Sniper, Skirmisher or Striker its personality, and one d6 roll per move — the <b>stance</b> — keeps it unpredictable. Set a unit to <b>AI mode: Flow AI</b> on the Table tab to use it in a game; here you can practise and tune the roles. Every role can be edited; changes are included in the JSON export.</p>`;
+  renderFlowDerived();
+  $('#p-flowparams').innerHTML = `<div class="panel-h"><h2>Role parameters</h2></div><div class="params">${ROLES.map(r => {
+    const p = S.flowParams[r];
+    const n = (f, l, t) => `<label class="small" title="${esc(t)}">${l}</label><input type="number" step="1" data-bind="fp:${r}:${f}" value="${esc(p[f])}">`;
+    return `<div class="pbox"><h4><span class="chip deckchip ${r}">${r}</span></h4>
+      <div class="pgrid">${n('standoff', 'Standoff range ″', 'Preferred distance from enemies')}${n('panic', 'Panic range ″ (0 = never)', 'An enemy closer than this triggers “Kite”')}${n('retreat', 'Retreat at % health', 'Crippled below this share of Armor+Structure')}
+        ${n('agg', 'Stance die: Aggressive on 1–', 'd6 result up to this value is Aggressive')}${n('bal', 'Stance die: Balanced up to', 'd6 result up to this value (and above Aggressive) is Balanced; the rest is Cautious')}
+        <label class="small">Opening move mode</label><select data-bind="fp:${r}:openMode">${['G', 'J', 'P'].map(m => `<option value="${m}" ${p.openMode === m ? 'selected' : ''}>${MODE_NAME[m]}</option>`).join('')}</select></div>
+      <label class="small" style="display:block;margin-top:8px">Preferred movement target</label><textarea rows="2" data-bind="fp:${r}:target">${esc(p.target)}</textarea>
+      <label class="small" style="display:block;margin-top:6px">Opening position (when the AI moves first)</label><textarea rows="2" data-bind="fp:${r}:open">${esc(p.open)}</textarea>
+      <label class="small" style="display:block;margin-top:6px">Combat target chain (tokens)</label><input type="text" style="width:100%" data-bind="fp:${r}:chain" value="${esc(p.chain)}"><div id="chainprev-${r}">${chainHTML(parseChain(p.chain))}</div>
+      <button class="btn sm" data-act="fp-reset" data-role="${r}" style="margin-top:6px">Reset this role</button></div>`;
+  }).join('')}</div>`;
+}
+
+/* ---------- library / legends ---------- */
+function renderLibrary() {
+  const f = S.libFilter;
+  $('#libfilters').innerHTML = ['All'].concat(DECKS).map(d => `<button class="subtab" aria-selected="${f === d}" data-act="lib-filter" data-deck="${d}">${d}</button>`).join('');
+  $('#libgrid').innerHTML = CARDS.filter(c => f === 'All' || c.deck === f).map(c => `<div class="libitem">${cardFace(c, {})}<button class="btn sm" data-act="lib-inspect" data-card="${c.id}">Inspect on Table</button></div>`).join('');
+}
+function renderLegends() {
+  const mm = [['G', 'Ground movement'], ['J', 'Jump – Ground if the unit has no jump jets'], ['P', 'Sprint – check the condition; no attack this turn'], ['S', 'Stand still – check the condition, otherwise skip the row']];
+  $('#legendModes').innerHTML = mm.map(x => `<div><span class="mi ${x[0]}">${x[0]}</span><span>${x[1]}</span></div>`).join('');
+  const ii = [[{ k: 'destroy' }, ICON_HELP.destroy], [{ k: 'crit' }, ICON_HELP.crit], [{ k: 'nocover' }, ICON_HELP.nocover], [{ k: 'near' }, ICON_HELP.near],
+    [{ k: 'tmm', d: 'hi' }, 'Triangle up: the enemy with the HIGHEST value of this stat.'], [{ k: 'tmm', d: 'lo' }, 'Triangle down: the enemy with the LOWEST value of this stat.'],
+    [{ k: 'health', d: 'lo' }, ICON_HELP.health + ' ' + ICON_HELP.threat], [{ k: 'range', d: 'lo' }, ICON_HELP.range + ' ' + ICON_HELP.mv + ' ' + ICON_HELP.pv]];
+  $('#legendIcons').innerHTML = ii.map(x => `<div>${iconHTML(x[0])}<span>${esc(x[1])}</span></div>`).join('');
+}
+
+/* ---------- dialogs ---------- */
+let dlgResolve = null;
+function openDlg(html) { $('#dlgBody').innerHTML = html; const d = $('#dlg'); if (!d.open) { try { d.showModal(); } catch (e) { d.setAttribute('open', ''); } } }
+function closeDlg() { const d = $('#dlg'); if (d.open) { try { d.close(); } catch (e) { d.removeAttribute('open'); } } if (dlgResolve) { const r = dlgResolve; dlgResolve = null; r(false); } }
+function askConfirm(msg, ok) {
+  return new Promise(res => { dlgResolve = res; openDlg(`<h3>Please confirm</h3><p style="margin:0">${esc(msg)}</p><div class="acts"><button class="btn" data-act="dlg-no">Cancel</button><button class="btn primary" data-act="dlg-yes">${esc(ok || 'OK')}</button></div>`); });
+}
+function pileDialog(id) {
+  const p = id ? getPile(id) : null, type = p ? p.type : 'Brawler';
+  const groups = DECKS.map(d => `<fieldset style="border:1px solid var(--line);border-radius:8px"><legend class="small">${d}</legend><div class="cardpick">${DECK_IDS(d).map(cid => `<label class="chk"><input type="checkbox" class="cpick" value="${cid}" ${p && p.include.includes(cid) ? 'checked' : ''}> #${CARD[cid].n} · ${CARD[cid].pr}</label>`).join('')}</div></fieldset>`).join('');
+  openDlg(`<h3>${p ? 'Edit pile' : 'Add pile'}</h3>
+    <label>Name<br><input type="text" id="dlgName" style="width:100%" value="${esc(p ? p.name : '')}" placeholder="e.g. Brawler deck"></label>
+    <label>Deck type<br><select id="dlgType" data-act="dlg-type">${DECKS.concat('Custom').map(t => `<option ${t === type ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+    <div id="dlgCards" style="display:${type === 'Custom' ? 'flex' : 'none'};flex-direction:column;gap:8px"><div class="hint">Custom pile: tick the cards it contains (any mix of the 32 cards).</div>${groups}</div>
+    <div class="acts"><button class="btn" data-act="dlg-no">Cancel</button><button class="btn primary" data-act="pile-save" data-id="${id || ''}">Save</button></div>`);
+}
+
+/* ---------- master render ---------- */
+function applyTheme() {
+  const eff = S.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : S.theme;
+  document.documentElement.dataset.theme = eff;
+  $('#themeBtn').textContent = 'Theme: ' + ({ auto: 'Auto', light: 'Light', dark: 'Dark' }[S.theme]);
+}
+function render() {
+  applyTheme();
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)));
+  $$('.tabpane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + S.tab));
+  if (S.tab === 'table') { renderRound(); renderPiles(); renderOptions(); renderLog(); renderUnits(); renderActive(); renderRoster(); }
+  else if (S.tab === 'library') renderLibrary();
+  else if (S.tab === 'flow') renderFlowTab();
+  save();
+}
+function renderKeep() {
+  const a = document.activeElement, key = a && a.dataset ? a.dataset.bind : null, pos = a && typeof a.selectionStart === 'number' ? a.selectionStart : null;
+  render();
+  if (key) { const n = document.querySelector(`[data-bind="${CSS.escape(key)}"]`); if (n) { n.focus(); if (pos !== null && n.setSelectionRange) try { n.setSelectionRange(pos, pos); } catch (e) { } } }
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200); }
+
+/* =====================================================================
+   EVENTS, presets, import / export, init
+   ===================================================================== */
+const SCENARIOS = {
+  mg: { name: 'Meet & Greet', ai: [['Nova T', 'Brawler', false], ['Pouncer Prime', 'Sniper', true]], pl: ['BJ-5 Blackjack', 'PXH-4M Phoenix Hawk', 'WSP-5A Wasp', 'LCT-7V Locust'] },
+  cos: { name: 'Clash of Steel', ai: [['Warhawk T', 'Brawler', false], ['Timberwolf T', 'Brawler', false], ['Nova T', 'Skirmisher', false], ['Pouncer Prime', 'Sniper', true], ['Fire Moth G', 'Striker', false]],
+    pl: ['AS7-S4 Atlas', 'ARC-7C Archer', 'WHR-8R Warhammer', 'BJ-5 Blackjack', 'TR5 Wraith', 'PXH-4M Phoenix Hawk', 'WSP-5A Wasp', 'LCT-7V Locust'] }
+};
+async function loadPreset(key) {
+  const sc = SCENARIOS[key]; if (!sc) return;
+  if (S.units.length || S.enemies.length) { const ok = await askConfirm(`Load “${sc.name}”? This replaces your current piles, AI units and player roster.`, 'Load'); closeDlgSilently(); if (!ok) return; }
+  const types = Array.from(new Set(sc.ai.map(a => a[1])));
+  S.piles = types.map(t => newPile(t));
+  S.units = sc.ai.map(a => { const u = newUnit(S.piles.find(p => p.type === a[1]).id, a[0], a[1]); u.jump = !!a[2]; return u; });
+  S.enemies = sc.pl.map(n => newEnemy(n));
+  S.round = 1; S.phase = 'prep'; S.activeUnit = null; S.free = newFree(); S.log = [];
+  logMsg(`Loaded scenario “${sc.name}”. The Brawler deck is shared where the scenario assigns the same role.`);
+  render(); toast(`“${sc.name}” loaded – tick “Jump-capable” for units with jump jets (Pouncer is pre-set).`);
+}
+function closeDlgSilently() { dlgResolve = null; const d = $('#dlg'); if (d.open) { try { d.close(); } catch (e) { d.removeAttribute('open'); } } }
+
+/* ---------- binding ---------- */
+function bindTarget(scope, id) {
+  switch (scope) { case 'u': return getUnit(id); case 'e': return S.enemies.find(e => e.id === id); case 'fp': return S.flowParams[id];
+    case 'o': return S.opts; case 's': return S; case 'pile': return getPile(id); case 'sb': return S.sandbox; }
+  return null;
+}
+function setPath(o, path, v) { const ks = path.split('.'); let c = o; for (let i = 0; i < ks.length - 1; i++) { if (typeof c[ks[i]] !== 'object' || c[ks[i]] === null) c[ks[i]] = {}; c = c[ks[i]]; } c[ks[ks.length - 1]] = v; }
+function applyBind(t) {
+  const [scope, id, ...rest] = t.dataset.bind.split(':'), path = rest.join(':'), obj = bindTarget(scope, id);
+  if (!obj) return false;
+  let v = t.type === 'checkbox' ? t.checked : t.value;
+  if (scope === 'fp' && ['standoff', 'panic', 'retreat', 'agg', 'bal'].includes(path)) { const x = num(v); if (x === null) return false; v = x; }
+  if (scope === 'u' && path === 'pileId') { if (obj.cardId) returnCardToPile(obj, false); if (v === '') v = null; }
+  if (scope === 'u' && path === 'mode' && v === 'flow' && obj.cardId) returnCardToPile(obj, false);
+  if (scope === 'u' && path === 'flow.role' && !ROLES.includes(v)) return false;
+  setPath(obj, path, v); return true;
+}
+function liveUpdate(scope, id, path, t) {
+  if (scope === 'e') { const e = S.enemies.find(x => x.id === id), cell = document.querySelector(`[data-hp="${CSS.escape(id)}"]`); if (e && cell) { const h = hp(e); cell.textContent = h ? h.health : '–'; } refreshDerived(); }
+  else if (scope === 'u' && /^dmg\./.test(path)) refreshDerived();
+  else if (scope === 'u' && path === 'name') $$(`[data-name-of="${CSS.escape(id)}"]`).forEach(n => { n.textContent = t.value; });
+  else if (scope === 'pile' && path === 'name') $$(`option[data-pile="${CSS.escape(id)}"]`).forEach(o => { o.textContent = t.value; });
+  else if (scope === 'fp') { if (path === 'chain') { const pv = document.getElementById('chainprev-' + id); if (pv) pv.innerHTML = chainHTML(parseChain(t.value)); } renderFlowDerived(); }
+  save();
+}
+document.addEventListener('input', ev => {
+  const t = ev.target; if (!t.dataset || !t.dataset.bind) return;
+  if (t.type === 'checkbox' || t.tagName === 'SELECT') return;
+  if (!applyBind(t)) return;
+  const [scope, id, ...r] = t.dataset.bind.split(':'); liveUpdate(scope, id, r.join(':'), t);
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.id === 'dlgType') { $('#dlgCards').style.display = t.value === 'Custom' ? 'flex' : 'none'; return; }
+  if (t.id === 'fileIn') { if (t.files[0]) readImport(t.files[0]); t.value = ''; return; }
+  if (!t.dataset || !t.dataset.bind) return;
+  const isText = t.type === 'text' || t.type === 'number' || t.tagName === 'TEXTAREA';
+  const ok = applyBind(t);
+  const [scope] = t.dataset.bind.split(':');
+  if (isText) { save(); return; }
+  if (!ok) return;
+  if (scope === 'fp') { renderFlowDerived(); save(); return; }
+  if (scope === 'sb') { render(); return; }
+  renderKeep();
+});
+
+/* ---------- clicks ---------- */
+function holderOf(ref) { if (ref === 'sb') return { h: S.sandbox, role: S.sandbox.role }; const u = getUnit(ref); return u ? { h: u.flow, role: u.flow.role } : null; }
+function markDone(u) { if (S.phase === 'combat') u.fired = true; else u.moved = true; }
+function freeDraw(pileId) {
+  const f = S.free, pile = getPile(pileId);
+  if (!pile) { toast('Pick a pile first.'); return; }
+  if (f.cardId) returnCardToPile(f, false);
+  f.pileId = pile.id;
+  const id = drawFromPile(pile); if (!id) return;
+  f.cardId = id; f.faceUp = true; f.rowMan = {}; f.res = null; f.useFirst = false; f.peek = true;
+  f.hist.unshift(id); f.hist = f.hist.slice(0, 12);
+  S.activeUnit = 'free'; S.view = 'move'; S.tab = 'table';
+  logMsg(`Free draw from “${pile.name}”: ${pile.type} ${CARD[id].n}/8 (priority ${CARD[id].pr}).`);
+}
+function inspectCard(id) {
+  const f = S.free; if (f.cardId && f.pileId) returnCardToPile(f, false);
+  f.pileId = null; f.cardId = id; f.faceUp = true; f.rowMan = {}; f.res = null; f.useFirst = false;
+  S.activeUnit = 'free'; S.view = 'move'; S.tab = 'table';
+}
+document.addEventListener('click', async ev => {
+  const el = ev.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id;
+  if (act === 'unit-select' && ev.target.closest('input,select,button,textarea,label')) return;
+  if (act === 'dlg-type') return;
+  const u = id ? getUnit(id) : null;
+  switch (act) {
+    case 'tab': S.tab = el.dataset.tab; render(); window.scrollTo(0, 0); return;
+    case 'theme': S.theme = ({ auto: 'light', light: 'dark', dark: 'auto' })[S.theme]; applyTheme(); save(); return;
+    case 'export': doExport(); return;
+    case 'import': $('#fileIn').click(); return;
+    case 'reset': { const ok = await askConfirm('Reset everything (piles, units, roster, flow parameters, saved copy in this browser)? Export first if you want to keep it.', 'Reset'); closeDlgSilently(); if (!ok) return;
+      try { localStorage.removeItem(LS_KEY); } catch (e) { } const th = S.theme; S = normalise(null); S.theme = th; render(); toast('Reset done.'); return; }
+    case 'clearlog': S.log = []; renderLog(); return;
+    case 'round+': S.round++; renderRound(); save(); return;
+    case 'round-': S.round = Math.max(1, S.round - 1); renderRound(); save(); return;
+    case 'deal': if (!S.units.length) { toast('Add an AI unit first.'); return; } dealRound(); render(); return;
+    case 'next': if (!nextUnit()) { render(); return; } render(); return;
+    case 'startcombat': {
+      const left = orderedUnits('move').length; S.phase = 'combat'; S.view = 'combat'; S.activeUnit = null;
+      logMsg('Combat phase – players attack first, then reveal AI cards in ascending priority.'); render();
+      if (left) toast(`${left} AI unit(s) had not moved yet.`); return; }
+    case 'endround': endRound(); render(); return;
+    /* piles */
+    case 'pile-add': pileDialog(null); return;
+    case 'pile-edit': pileDialog(id); return;
+    case 'pile-del': {
+      const used = S.units.filter(x => x.pileId === id).length;
+      const ok = await askConfirm(used ? `Remove this pile? ${used} unit(s) use it and will be moved to the first remaining pile.` : 'Remove this pile?', 'Remove'); closeDlgSilently(); if (!ok) return;
+      S.units.forEach(x => { if (x.pileId === id && x.cardId) returnCardToPile(x, false); });
+      if (S.free.pileId === id) { S.free.cardId = null; S.free.pileId = null; }
+      S.piles = S.piles.filter(p => p.id !== id);
+      S.units.forEach(x => { if (x.pileId === id) x.pileId = S.piles[0] ? S.piles[0].id : null; });
+      render(); return; }
+    case 'pile-shuffle': { const p = getPile(id); const held = new Set(heldCards()); p.draw = shuffle(p.include.filter(c => !held.has(c))); p.discard = []; logMsg(`Shuffled “${p.name}”.`); render(); toast('Shuffled.'); return; }
+    case 'pile-draw': freeDraw(id); render(); return;
+    case 'free-draw': freeDraw(S.free.pileId); render(); return;
+    case 'free-return': returnCardToPile(S.free, false); render(); return;
+    case 'free-card': inspectCard(el.dataset.card); render(); return;
+    case 'lib-inspect': inspectCard(el.dataset.card); render(); window.scrollTo(0, 0); return;
+    case 'lib-filter': S.libFilter = el.dataset.deck; renderLibrary(); save(); return;
+    case 'pile-save': {
+      const name = ($('#dlgName').value || '').trim(), type = $('#dlgType').value;
+      const include = type === 'Custom' ? $$('.cpick:checked').map(c => c.value) : DECK_IDS(type);
+      if (type === 'Custom' && !include.length) { toast('Tick at least one card for a custom pile.'); return; }
+      if (!id) { const p = newPile(type, name || (type + ' deck')); p.include = include; p.draw = shuffle(include); S.piles.push(p); }
+      else { const p = getPile(id); const same = p.type === type && p.include.length === include.length && include.every(c => p.include.includes(c)); p.name = name || p.name; p.type = type;
+        if (!same) { p.include = include; const held = new Set(heldCards()); p.draw = shuffle(include.filter(c => !held.has(c))); p.discard = []; } }
+      closeDlgSilently(); render(); return; }
+    case 'dlg-yes': { const r = dlgResolve; dlgResolve = null; closeDlgSilently(); if (r) r(true); return; }
+    case 'dlg-no': closeDlg(); return;
+    case 'preset': loadPreset($('#presetSel').value); return;
+    case 'std-decks': { let n = 0; DECKS.forEach(d => { if (!S.piles.some(p => p.type === d)) { S.piles.push(newPile(d)); n++; } }); render(); toast(n ? `${n} standard deck(s) added.` : 'All four standard decks already exist.'); return; }
+    /* units */
+    case 'unit-add': {
+      if (!S.piles.length) { toast('Add a pile first.'); return; }
+      const pile = S.piles[0], nu = newUnit(pile.id, 'AI unit ' + (S.units.length + 1), DECKS.includes(pile.type) ? pile.type : 'Brawler'); S.units.push(nu); S.activeUnit = nu.id; render(); return; }
+    case 'unit-del': { if (u.cardId) returnCardToPile(u, false); S.units = S.units.filter(x => x.id !== id); if (S.activeUnit === id) S.activeUnit = null; render(); return; }
+    case 'unit-select': S.activeUnit = id; render(); return;
+    case 'unit-activate': activate(u, S.phase === 'combat' ? 'combat' : 'move'); render(); return;
+    case 'unit-done': if (S.phase === 'combat') u.fired = !u.fired; else u.moved = !u.moved; render(); return;
+    case 'unit-draw': { if (u.cardId) return; const c = drawFromPile(getPile(u.pileId)); if (c) { u.cardId = c; u.faceUp = false; logMsg(`${u.name} draws a card (priority ${CARD[c].pr}).`); } render(); return; }
+    case 'unit-return': returnCardToPile(u, false); render(); return;
+    case 'done-next': { const cu = activeU(); if (cu && cu.id !== 'free') markDone(cu); if (!nextUnit()) { toast(S.phase === 'combat' ? 'All AI units have attacked – end the round when ready.' : 'All AI units have moved – start the combat phase when the players are done.'); } render(); return; }
+    case 'flip': { const cu = activeU(); if (cu) cu.faceUp = true; render(); return; }
+    case 'peek': { const cu = activeU(); if (cu) cu.peek = true; render(); return; }
+    case 'usefirst': { const cu = activeU(); if (cu) { cu.useFirst = el.checked; if (cu.useFirst) cu.res = null; } render(); return; }
+    case 'view': S.view = el.dataset.view; render(); return;
+    case 'rowyes': case 'rowno': { const cu = activeU(), i = el.dataset.i, v = act === 'rowyes' ? 'y' : 'n'; if (cu) { if (cu.rowMan[i] === v) delete cu.rowMan[i]; else cu.rowMan[i] = v; } renderActive(); save(); return; }
+    case 'rowres': { const cu = activeU(), i = parseInt(el.dataset.i, 10); if (cu) cu.res = cu.res === i ? null : i; renderActive(); save(); return; }
+    /* roster */
+    case 'enemy-add': S.enemies.push(newEnemy('Player unit ' + (S.enemies.length + 1))); render(); return;
+    case 'enemy-del': S.enemies = S.enemies.filter(e => e.id !== id); render(); return;
+    /* flow AI */
+    case 'fanswer': case 'froll': case 'fundo': case 'freset': {
+      const ho = holderOf(el.dataset.ref); if (!ho) return; const kind = el.dataset.kind;
+      if (act === 'fanswer') flowAnswer(ho.h, kind, parseInt(el.dataset.i, 10));
+      else if (act === 'froll') flowRoll(ho.h, kind, ho.role);
+      else if (act === 'fundo') flowUndo(ho.h, kind); else flowReset(ho.h, kind);
+      render(); return; }
+    case 'flow-kind': S.sandbox.kind = el.dataset.kind; render(); return;
+    case 'fp-reset': S.flowParams[el.dataset.role] = defaultFlowParams()[el.dataset.role]; render(); return;
+  }
+});
+
+/* ---------- export / import ---------- */
+function doExport() {
+  const o = clone(S); o.log = []; o.exportedAt = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `aces-ai-setup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  toast('Setup exported as JSON.');
+}
+function readImport(file) {
+  const fr = new FileReader();
+  fr.onerror = () => toast('Could not read that file.');
+  fr.onload = () => {
+    try {
+      const o = JSON.parse(String(fr.result));
+      if (!o || typeof o !== 'object' || (o.app !== 'aces-ai-companion' && !Array.isArray(o.piles))) throw new Error('not an Aces AI Companion export');
+      const n = normalise(o); S = n; render(); toast(`Imported: ${S.piles.length} pile(s), ${S.units.length} AI unit(s), ${S.enemies.length} player unit(s).`);
+    } catch (e) { toast('Import failed – ' + e.message + '. Nothing was changed.'); }
+  };
+  fr.readAsText(file);
+}
+['dragenter', 'dragover'].forEach(n => document.addEventListener(n, e => { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) { e.preventDefault(); document.body.classList.add('drop'); } }));
+['dragleave', 'drop'].forEach(n => document.addEventListener(n, e => { if (n === 'dragleave' && e.relatedTarget) return; document.body.classList.remove('drop'); }));
+document.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) { e.preventDefault(); readImport(e.dataTransfer.files[0]); } });
+$('#dlg').addEventListener('close', () => { if (dlgResolve) { const r = dlgResolve; dlgResolve = null; r(false); } });
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (S.theme === 'auto') applyTheme(); }); } catch (e) { }
+
+/* ---------- init ---------- */
+(function init() {
+  let saved = loadSaved();
+  try { S = normalise(saved); } catch (e) { S = normalise(null); }
+  renderLegends();
+  render();
+})();
+</script>
+</body>
+</html>
